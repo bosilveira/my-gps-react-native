@@ -1,13 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import apiReducer from "./api.slice";
 import locationReducer from "./location.slice";
+import networkReducer from "./network.slice";
 //import loginReducer from "./loginSlices.redux";
 //import userReducer from  "./userSlices.redux";
 
 export function makeStore() {
     return configureStore({
       reducer: {
-        api: apiReducer,
+        network: networkReducer,
         location: locationReducer,
     },
     });

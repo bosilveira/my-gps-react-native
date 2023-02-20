@@ -29,7 +29,7 @@ export default function HomePage({ navigation }: Props) {
     const hideModal = () => setVisible(false);
 
     const dispatch = useDispatch<AppDispatch>();
-    const apiData = useSelector((state: RootState) => state.api);
+    const apiData = useSelector((state: RootState) => state.network);
     const locationData = useSelector((state: RootState) => state.location);
 
     const [isSwitchOn, setIsSwitchOn] = React.useState(false);
