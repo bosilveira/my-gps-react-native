@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, RefreshControl } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import { Appbar, Button, Card, Avatar, Text, Divider, List, RadioButton } from 'react-native-paper';
@@ -36,12 +36,25 @@ export default function HomePage({ navigation }: Props) {
     const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
     const [service, setService] = React.useState('1 second');
 
+    const [refreshing, setRefreshing] = React.useState(false);
+    const [opacity, setOpacity] = React.useState(1);
+
+    const onRefresh = React.useCallback(() => {
+      setRefreshing(true);
+      setOpacity(.2)
+      setTimeout(() => {
+        setRefreshing(false);
+        setOpacity(1)
+        console.log("refreshing")
+      }, 2000);
+    }, []);
+
     return (
     <>
     <StatusBar 
     animated={true}
     translucent={true}
-    backgroundColor="#61dafb"/>
+    backgroundColor="#CCCCFF"/>
     <Provider>
         <Appbar.Header>
             <Appbar.Action icon="home" onPress={showModal} />
@@ -61,7 +74,11 @@ export default function HomePage({ navigation }: Props) {
             </Modal>
         </Portal>
 
-        <ScrollView>
+        <ScrollView 
+        style={{opacity}}
+        refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
     <Card
     style={{margin: 8}}
     >

@@ -13,7 +13,7 @@ export default function SecurityPage({ navigation }: Props) {
     <StatusBar 
         animated={true}
         translucent={true}
-        backgroundColor="#61dafb"/>
+        backgroundColor="#CCCCFF"/>
     <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
         <Appbar.Content title="Security" />

@@ -13,7 +13,7 @@ export default function DisclaimerPage({ navigation }: Props) {
     <StatusBar 
         animated={true}
         translucent={true}
-        backgroundColor="#61dafb"/>
+        backgroundColor="#CCCCFF"/>
     <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
         <Appbar.Content title="Disclaimer" />
@@ -25,17 +25,18 @@ export default function DisclaimerPage({ navigation }: Props) {
         value={language}
         onValueChange={setLanguage}
         buttons={[
-          {
-            value: 'en-US',
-            label: 'English',
-          },
-          {
-            value: 'pt-BR',
-            label: 'Português',
-          },
-          { value: 'es-ES',
-            label: 'Español'
-         },
+            {
+                value: 'es-ES',
+                label: 'Español'
+            },
+            {
+                value: 'en-US',
+                label: 'English',
+            },
+            {
+                value: 'pt-BR',
+                label: 'Português',
+            },
         ]}
       />
     </View>

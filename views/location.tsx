@@ -13,11 +13,11 @@ export default function LocationPage({ navigation }: Props) {
     <StatusBar 
         animated={true}
         translucent={true}
-        backgroundColor="#61dafb"/>
+        backgroundColor="#CCCCFF"/>
     <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
-        <Appbar.Content title="Location" />
-        <Appbar.Action icon="map-marker" onPress={() => {}} />
+        <Appbar.Content title="Location Tracking" />
+        <Appbar.Action icon="broadcast" onPress={() => {}} />
     </Appbar.Header>
     </>
   );
