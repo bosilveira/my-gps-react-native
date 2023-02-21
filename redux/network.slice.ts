@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiGetPoints } from "../utils/api.utils";
 
 export const getPoints = createAsyncThunk(
-    "api/getPoints",
+    "network/getPoints",
     async ( args, { getState } ) => {
         const state = getState() as any;
         const result = await apiGetPoints(state.network.address, state.network.timeout)
@@ -14,7 +14,7 @@ export const getPoints = createAsyncThunk(
 
 
 const restoreApiData = createAsyncThunk(
-  "api/restoreApiData",
+  "network/restoreApiData",
   async ( ) => {
     
     let storageError = false

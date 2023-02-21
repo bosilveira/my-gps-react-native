@@ -9,9 +9,10 @@ import { store } from './redux/store.redux';
 import DisclaimerPage from './views/disclaimer';
 import HelpPage from './views/help';
 import HomePage from './views/home';
-import LocationPage from './views/location';
+import LocationView from './views/location.view';
 import NetworkView from './views/network.view';
 import SecurityPage from './views/security';
+import PackagesView from './views/packages.view';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -32,7 +33,8 @@ export default function App() {
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Address">
           <Stack.Screen name="Home" component={HomePage} options={{ headerShown: false }}/>
-          <Stack.Screen name="Location" component={LocationPage} options={{ headerShown: false }}/>
+          <Stack.Screen name="Packages" component={PackagesView} options={{ headerShown: false }}/>
+          <Stack.Screen name="Location" component={LocationView} options={{ headerShown: false }}/>
           <Stack.Screen name="Network" component={NetworkView} options={{ headerShown: false }}/>
           <Stack.Screen name="Security" component={SecurityPage} options={{ headerShown: false }}/>
           <Stack.Screen name="Disclaimer" component={DisclaimerPage} options={{ headerShown: false }}/>

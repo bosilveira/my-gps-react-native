@@ -2,18 +2,8 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
-
-interface checkAddressProps {
-  address: string,
-  timeout: string
-}
-
-interface checkAddressReturnProps {
-  address: string,
-  timeout: number,
-  fetchError: boolean,
-  storageError: boolean,
-}
+import { LocationSubscriber } from "expo-location/build/LocationSubscribers";
+import { LocationSubscription } from "expo-location";
 
 export const checkForegroundPermission = createAsyncThunk(
   "location/checkForegroundPermission",
@@ -57,26 +47,31 @@ export const watchLocationUpdates = createAsyncThunk(
             }
             if (data) {
                 const { locations } = data as any
-                console.log(locations)
+                console.log('new locations',locations)
             }
-            console.log('Received new locations', data.toString());
            });
       }
   );
 
+
   export const watchPosition = createAsyncThunk(
     "location/watchPosition",
-    async ( ) => {
-        await Location.watchPositionAsync({
-            accuracy: 5,
-            distanceInterval: 1,
-
-        },(location)=>{
+    async ( args, { getState } ) => {
+        const state = getState() as any;
+        console.log('start')
+        console.log('subscription', state.location.locationSubscription)
+        state.location.locationSubscription.remove()
+        const subscription = await Location.watchPositionAsync(
+            {
+                accuracy: state.location.accuracy,
+                distanceInterval: state.location.distanceInterval
+            },
+            (location)=>{
             const { locations } = location as any
-            console.log(location)
-            
-        //    console.log('teste', locations.toString())
+            console.log('new locations', location)
         });
+        console.log('subscription obj', subscription)
+        return { remove: subscription.remove }
       }
   ); 
 
@@ -84,6 +79,13 @@ const initialState = {
     foregroundPermission: false,
     backgroundPermission: false,
     sampling: 1000,
+    lastPosition: {},
+    currentPosition: {},
+    maxAge: 0,
+    requiredAccuracy: 1,
+    accuracy: 6,
+    distanceInterval: 1,
+    watchPosition: false
  } as any;
 
  const locationSlice = createSlice({
@@ -96,6 +98,11 @@ const initialState = {
         state.backgroundPermission = false;
         state.sampling = 1000;
       },
+
+      setWatchPosition: (state, action) => {
+        state.watchPosition = action.payload
+      },
+
 
     },
     extraReducers: (builder) => {
@@ -112,6 +119,6 @@ const initialState = {
     },
   });
   
-  export const { locationDataReset } =  locationSlice.actions;
+  export const { locationDataReset, setWatchPosition } =  locationSlice.actions;
   
   export default locationSlice.reducer;
