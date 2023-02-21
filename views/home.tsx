@@ -9,6 +9,7 @@ import { Switch } from 'react-native-paper';
 
 import { Menu, Modal, Portal, Provider } from 'react-native-paper';
 
+// redux
 import { AppDispatch, RootState } from '../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
 import { checkForegroundPermission, checkBackgroundPermission, watchPosition } from '../redux/location.slice';
@@ -17,6 +18,7 @@ import { getAllKeys, timedGetAllKeys, testStorage, testStorageCalls } from '../u
 
 import StorageTest from '../components/storageTest';
 
+// types
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
@@ -95,7 +97,7 @@ export default function HomePage({ navigation }: Props) {
                 title="Location Broadcast"
                 description={()=><>
                 <Text>Address: {apiData.address}</Text>
-                <Button icon="link" mode="contained" onPress={() => navigation.navigate('Address')} style={{marginVertical: 8}} >Connection</Button>
+                <Button icon="link" mode="contained" onPress={() => navigation.navigate('Network')} style={{marginVertical: 8}} >Connection</Button>
                 </>}
                 />
 
@@ -114,7 +116,7 @@ export default function HomePage({ navigation }: Props) {
                 title="Package Uploading"
                 description={()=><>
                 <Text>Uploads: {10}, Pending: 5</Text>
-                <Button icon="package" mode="contained" onPress={() => navigation.navigate('Address')} style={{marginVertical: 8}} >Check Packages</Button>
+                <Button icon="package" mode="contained" onPress={() => navigation.navigate('Network')} style={{marginVertical: 8}} >Check Packages</Button>
             </>}
             />
 
