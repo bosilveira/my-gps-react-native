@@ -10,7 +10,7 @@ import DisclaimerPage from './views/disclaimer';
 import HelpPage from './views/help';
 import HomePage from './views/home';
 import LocationPage from './views/location';
-import AddressPage from './views/address';
+import NetworkView from './views/network.view';
 import SecurityPage from './views/security';
 
 export type RootStackParamList = {
@@ -33,7 +33,7 @@ export default function App() {
         <Stack.Navigator initialRouteName="Address">
           <Stack.Screen name="Home" component={HomePage} options={{ headerShown: false }}/>
           <Stack.Screen name="Location" component={LocationPage} options={{ headerShown: false }}/>
-          <Stack.Screen name="Address" component={AddressPage} options={{ headerShown: false }}/>
+          <Stack.Screen name="Network" component={NetworkView} options={{ headerShown: false }}/>
           <Stack.Screen name="Security" component={SecurityPage} options={{ headerShown: false }}/>
           <Stack.Screen name="Disclaimer" component={DisclaimerPage} options={{ headerShown: false }}/>
           <Stack.Screen name="Help" component={HelpPage} options={{ headerShown: false }}/>
