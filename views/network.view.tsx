@@ -28,8 +28,8 @@ export default function NetworkView({ navigation }: Props) {
         setError(result.error);
     }
 
-    return (
-    <>
+    return (<>
+    
     <StatusBar 
     animated={true}
     translucent={true}
@@ -109,6 +109,6 @@ export default function NetworkView({ navigation }: Props) {
         </Button>
 
     </ScrollView>
-    </>
-    );
+    
+    </>);
 }

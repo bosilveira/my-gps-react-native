@@ -10,19 +10,19 @@ import type { RootStackParamList } from '../App';
 type Props = NativeStackScreenProps<RootStackParamList, 'Security'>;
 
 export default function SecurityPage({ navigation }: Props) {
-    return (
-        <>
-        <StatusBar 
-        animated={true}
-        translucent={true}
-        backgroundColor="#CCCCFF"
-        />
-        
-        <Appbar.Header>
-            <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
-            <Appbar.Content title="Security" />
-            <Appbar.Action icon="security" onPress={() => {}} />
-        </Appbar.Header>
-        </>
-    );
+    return (<>
+    
+    <StatusBar 
+    animated={true}
+    translucent={true}
+    backgroundColor="#CCCCFF"
+    />
+    
+    <Appbar.Header>
+        <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
+        <Appbar.Content title="Security" />
+        <Appbar.Action icon="security" onPress={() => {}} />
+    </Appbar.Header>
+
+    </>);
 }

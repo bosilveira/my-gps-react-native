@@ -5,9 +5,9 @@ import { StyleSheet } from 'react-native';
 import { Provider } from 'react-redux';
 import { store } from './redux/store.redux';
 
-import DisclaimerPage from './views/disclaimer';
-import HelpPage from './views/help';
-import HomePage from './views/home';
+import DisclaimerPage from './views/disclaimer.view';
+import HelpPage from './views/help.view';
+import HomePage from './views/home.view';
 import LocationView from './views/location.view';
 import NetworkView from './views/network.view';
 import SecurityPage from './views/security';

@@ -10,12 +10,13 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Disclaimer'>;
 
 export default function DisclaimerPage({ navigation }: Props) {
     const [language, setLanguage] = React.useState('pt-BR');
-    return (
-    <>
+    return (<>
+
     <StatusBar 
-        animated={true}
-        translucent={true}
-        backgroundColor="#CCCCFF"/>
+    animated={true}
+    translucent={true}
+    backgroundColor="#CCCCFF"
+    />
 
     <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
@@ -103,6 +104,6 @@ export default function DisclaimerPage({ navigation }: Props) {
         </View>}
 
     </ScrollView>
-    </>
-    );
+
+    </>);
 }

@@ -47,12 +47,14 @@ export default function LocationView({ navigation }: Props) {
         Battery.getPowerStateAsync().then(power => setBattery(power));
     })
 
-    return (
-    <>
+    return (<>
+
     <StatusBar 
-        animated={true}
-        translucent={true}
-        backgroundColor="#CCCCFF"/>
+    animated={true}
+    translucent={true}
+    backgroundColor="#CCCCFF"
+    />
+    
     <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
         <Appbar.Content title="Location Tracking" />
@@ -116,6 +118,6 @@ export default function LocationView({ navigation }: Props) {
         <PositionWatcher />
 
     </ScrollView>
-    </>
-    );
+
+    </>);
 }

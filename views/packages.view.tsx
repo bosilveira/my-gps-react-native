@@ -10,8 +10,8 @@ import type { RootStackParamList } from '../App';
 type Props = NativeStackScreenProps<RootStackParamList, 'Packages'>;
 
 export default function PackagesView({ navigation }: Props) {
-  return (
-    <>
+  return (<>
+
     <StatusBar 
     animated={true}
     translucent={true}
@@ -24,6 +24,5 @@ export default function PackagesView({ navigation }: Props) {
         <Appbar.Action icon="sync" onPress={() => {}} />
     </Appbar.Header>
     
-    </>
-  );
+    </>);
 }

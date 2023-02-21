@@ -50,12 +50,14 @@ export default function HomePage({ navigation }: Props) {
       }, 2000);
     }, []);
 
-    return (
-    <>
+    return (<>
+
     <StatusBar 
     animated={true}
     translucent={true}
-    backgroundColor="#CCCCFF"/>
+    backgroundColor="#CCCCFF"
+    />
+    
     <Provider>
         <Appbar.Header>
             <Appbar.Action icon="home" onPress={showModal} />
@@ -138,8 +140,7 @@ export default function HomePage({ navigation }: Props) {
     </Card>
     </ScrollView>
 
-
     </Provider>
-    </>
-    );
+
+    </>);
 }
