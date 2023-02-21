@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
-
+import * as Battery from 'expo-battery';
+import { BatteryState } from 'expo-battery/build/Battery.types';
 
 
 export const checkLocationPermission = async () => {
@@ -41,4 +42,14 @@ export const getPosition = async () => {
 
     return {last, current}
 
-    }
+}
+
+export const watchPosition = async (accuracy: number, distanceInterval: number, callback = (location: any)=>{}) => {
+    const subscription = await Location.watchPositionAsync(
+        { accuracy, distanceInterval },
+        (location)=>{
+        const { locations } = location as any
+        callback(location)
+    });
+    return subscription
+}
