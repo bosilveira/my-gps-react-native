@@ -1,22 +1,13 @@
+// React Native, React Native Paper, and Expo components
 import * as React from 'react';
-import { View, ScrollView, RefreshControl } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-
-import { Appbar, Button, Card, Avatar, Text, Divider, List, RadioButton } from 'react-native-paper';
-import { ProgressBar, MD3Colors } from 'react-native-paper';
-import { Switch } from 'react-native-paper';
-
-
-import { Menu, Modal, Portal, Provider } from 'react-native-paper';
+import { Switch, Appbar, Button, Card, Avatar, Text, Divider, List, ProgressBar, ToggleButton, Modal, Portal, Provider } from 'react-native-paper';
 
 // redux
 import { AppDispatch, RootState } from '../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
-import { checkForegroundPermission, checkBackgroundPermission, watchPosition } from '../redux/location.slice';
-
-import { getAllKeys, timedGetAllKeys, testStorage, testStorageCalls } from '../utils/asyncStorage';
-
-import StorageTest from '../components/storageTest';
+import { startLocationUpdatesThunk, stopLocationUpdatesThunk, setDeferredUpdatesInterval } from '../redux/location.slice';
 
 // types
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -25,30 +16,39 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function HomePage({ navigation }: Props) {
 
+    // Redux
+    const dispatch = useDispatch<AppDispatch>();
+    const network = useSelector((state: RootState) => state.network);
+    const location = useSelector((state: RootState) => state.location);
+    const database = useSelector((state: RootState) => state.database);
+
+    // Modal navigation controllers
     const [visible, setVisible] = React.useState(false);
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
 
-    const dispatch = useDispatch<AppDispatch>();
-    const apiData = useSelector((state: RootState) => state.network);
-    const locationData = useSelector((state: RootState) => state.location);
 
+    // BACKGROUND (MAIN) LOCATION TRACKING
+
+    // Switch component controller: Activate Location Tracking
     const [isSwitchOn, setIsSwitchOn] = React.useState(false);
-    const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
-    const [service, setService] = React.useState('1 second');
+    const onToggleSwitch = () => {
+        if (isSwitchOn) {
+            dispatch(stopLocationUpdatesThunk());
+        } else {
+            dispatch(startLocationUpdatesThunk());
+        }
+        setIsSwitchOn(!isSwitchOn);
+    }
 
-    const [refreshing, setRefreshing] = React.useState(false);
-    const [opacity, setOpacity] = React.useState(1);
-
-    const onRefresh = React.useCallback(() => {
-      setRefreshing(true);
-      setOpacity(.2)
-      setTimeout(() => {
-        setRefreshing(false);
-        setOpacity(1)
-        console.log("refreshing")
-      }, 2000);
-    }, []);
+    // Time interval toggle controller
+    const setDeferredUpdatesIntervalHandler = async (interval: number) => {
+        if (isNaN(interval)) {
+            dispatch(setDeferredUpdatesInterval(0));
+        } else {
+            dispatch(setDeferredUpdatesInterval(interval));
+        }
+    }
 
     return (<>
 
@@ -78,67 +78,64 @@ export default function HomePage({ navigation }: Props) {
             </Modal>
         </Portal>
 
-        <ScrollView 
-        style={{opacity}}
-        refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }>
-    <Card
-    style={{margin: 8}}
-    >
-        <Card.Title
-        title="GPS Tracking and Network"
-        subtitle="Service is ACTIVE"
-        right={() => <Switch value={isSwitchOn} onValueChange={onToggleSwitch}/>}
-        left={(props) => <Avatar.Icon {...props} icon="car-connected" />}
-        />
-        <Card.Content>
+        <ScrollView>
 
-            <List.Section>
-                <List.Item
-                title="Location Broadcast"
-                description={()=><>
-                <Text>Address: {apiData.address}</Text>
-                <Button icon="link" mode="contained" onPress={() => navigation.navigate('Network')} style={{marginVertical: 8}} >Connection</Button>
-                </>}
+            <Card
+            style={{margin: 8}}
+            >
+                <Card.Title
+                title="GPS Tracking and Network"
+                subtitle={"Service is " + (location.locationUpdates ? 'ON' : 'OFF')}
+                right={() => <Switch value={isSwitchOn} onValueChange={onToggleSwitch}/>}
+                left={(props) => <Avatar.Icon {...props} icon="car-connected" />}
                 />
+                <Card.Content>
 
-                <List.Accordion
-                title={"Sampling rate: " + service}
-                left={props => <List.Icon {...props} icon="timer-outline" />}>
-                <RadioButton.Group onValueChange={value => setService(value)} value={service}>
-                    <RadioButton.Item label="1 second" value="1s" />
-                    <RadioButton.Item label="3 seconds" value="3s" />
-                    <RadioButton.Item label="5 seconds" value="5s" />
-                    <RadioButton.Item label="10 seconds" value="10s" />
-                </RadioButton.Group>
-                </List.Accordion>
+                    <List.Section>
+                        <Divider style={{marginVertical: 8}} />
+                        <List.Item
+                        title="Tracking Interval"
+                        description={()=><>
+                            <View>
+                                <ToggleButton.Row
+                                style={{display: 'flex', justifyContent: 'center', width: '100%', marginTop: 8}}
+                                onValueChange={value => setDeferredUpdatesIntervalHandler(parseInt(value))} value={location.deferredUpdatesInterval.toString()}
+                                >
+                                    <ToggleButton icon={() => <Text >0s</Text>} value="0" />
+                                    <ToggleButton icon={() => <Text>1s</Text>} value="1000" />
+                                    <ToggleButton icon={() => <Text>3s</Text>} value="3000" />
+                                    <ToggleButton icon={() => <Text>5s</Text>} value="5000" />
+                                    <ToggleButton icon={() => <Text>10s</Text>} value="10000" />
+                                </ToggleButton.Row>
+                                <Button icon="package" mode="contained" onPress={() => navigation.navigate('Location')} style={{marginTop: 24}} >Tracking Settings</Button>
+                            </View>
+                            </>}
+                        />
+                        <Divider style={{marginVertical: 8}} />
+                        <List.Item
+                        title="Location Broadcast"
+                        description={()=><>
+                            <Text>Address: {network.address}</Text>
+                            <Button icon="link" mode="contained" onPress={() => navigation.navigate('Network')} style={{marginTop: 24}} >Connection Settings</Button>
+                            </>}
+                        />
+                        <Divider style={{marginVertical: 8}} />
+                        <List.Item
+                            title="Package Uploading"
+                            description={()=><>
+                            <Text>Sent: {database.sent}, Pending: {database.pending}</Text>
+                            <Button icon="package" mode="contained" onPress={() => navigation.navigate('Packages')} style={{marginTop: 24}} >Check Packages</Button>
+                            </>}
+                        />
+                    </List.Section>
 
-            <List.Item
-                title="Package Uploading"
-                description={()=><>
-                <Text>Uploads: {10}, Pending: 5</Text>
-                <Button icon="package" mode="contained" onPress={() => navigation.navigate('Network')} style={{marginVertical: 8}} >Check Packages</Button>
-            </>}
-            />
+                </Card.Content>
 
-            </List.Section>
+                <ProgressBar animatedValue={(database.sent / (database.sent + database.pending))} style={{marginHorizontal: 12, marginVertical: 12}}/>
 
-        <StorageTest />
+            </Card>
 
-        <Button icon="package" mode="contained" onPress={() => dispatch(checkBackgroundPermission())} style={{marginVertical: 8}} >Permission</Button>
-        <Button icon="package" mode="contained" onPress={() => dispatch(watchPosition())} style={{marginVertical: 8}} >Watch</Button>
-
-        <Button icon="package" mode="contained" onPress={() => testStorageCalls(10)} style={{marginVertical: 8}} >Test Storage</Button>
-
-
-        <Text>Permission: {locationData.backgroundPermission.toString()}</Text>
-
-        </Card.Content>
-
-        <ProgressBar animatedValue={0.1} style={{marginHorizontal: 12, marginVertical: 12}}/>
-    </Card>
-    </ScrollView>
+        </ScrollView>
 
     </Provider>
 

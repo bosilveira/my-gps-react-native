@@ -33,7 +33,7 @@ export default function PositionWatcher( ) {
 
     React.useEffect(()=>{
         if (locationData.watchPosition) {
-            const watcher = watchPosition(locationData.accuracy, locationData.distanceInterval)
+            const watcher = watchPosition(locationData.accuracy)
             return () => {
                 watcher.then((subscription)=>subscription.remove())
             }

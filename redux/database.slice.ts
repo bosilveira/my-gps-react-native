@@ -1,94 +1,117 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import * as Location from 'expo-location';
 import { LocationObject } from 'expo-location';
-import { storePackage, clearStorage, storePendingPackage, storeSentPackage } from "../utils/asyncStorage";
+import { storePackage, clearStorage, storePendingPackage, storeSentPackage, deletePackage, countPendingPackages, countSentPackages, getPackagesPerPage } from "../utils/asyncStorage";
 
-export const savePendingPackage = createAsyncThunk(
+// save package as PENDING
+export const savePendingPackageThunk = createAsyncThunk(
     "database/savePendingPackage",
-      async ( location: LocationObject, { getState } ) => {
-          const { status } = await Location.getForegroundPermissionsAsync();
-          storePendingPackage(location);
-          const state = getState() as any;
-          return state.database.pending + 1;
-      }
-  );
-
-  export const saveSentPackage = createAsyncThunk(
-    "database/storeSentPackage",
-      async ( location: LocationObject, { getState } ) => {
-          const { status } = await Location.getForegroundPermissionsAsync();
-          storeSentPackage(location);
-          const state = getState() as any;
-          return state.database.sent + 1;
-      }
-  );
-
-
-export const savePackage = createAsyncThunk(
-  "database/savePackage",
-    async ( location: LocationObject, { getState } ) => {
-        const { status } = await Location.getForegroundPermissionsAsync();
-        storePackage(location);
-        const state = getState() as any;
-        return state.database.packages + 1;
+    async ( location: LocationObject ) => {
+        await storePendingPackage(location);
     }
 );
 
-export const clearDatabase = createAsyncThunk(
+// save package as SENT
+export const saveSentPackageThunk = createAsyncThunk(
+    "database/storeSentPackage",
+    async ( location: LocationObject ) => {
+        await storeSentPackage(location);
+    }
+);
+
+// delete package by ID
+export const deletePackageThunk = createAsyncThunk(
+    "database/deletePackage",
+    async ( packageId: string ) => {
+        await deletePackage(packageId);
+    }
+);
+
+// count database package entries; return packages (total), pending, and sent
+export const countDatabasePackagesThunk = createAsyncThunk(
+    "database/countDatabasePackages",
+    async ( ) => {
+        const pending = await countPendingPackages();
+        const sent = await countSentPackages();
+        return { packages: pending + sent, pending, sent };
+    }
+);
+
+// get packages per page
+export const paginatePackagesThunk = createAsyncThunk(
+    "database/getPackagesPerPage",
+    async ( page: number ) => {
+        const { list, totalPages, packages } = await getPackagesPerPage(page);
+        return { list, page, totalPages, packages };
+    }
+);
+
+// delete all database entries
+export const clearDatabaseThunk = createAsyncThunk(
     "database/clearDatabase",
-      async ( ) => {
-          clearStorage();
-          return 0;
-      }
-  );
-  
+    async ( ) => {
+        clearStorage();
+        return 0;
+    }
+);
 
 const initialState = {
     packages: 0,
     pending: 0,
-    sent: 0
- } as any;
+    sent: 0,
+    totalPages: 0,
+    page: 0,
+    pageList: [],
+    loading: false
+} as any;
 
- const databaseSlice = createSlice({
+const databaseSlice = createSlice({
     name: "database",
     initialState,
     reducers: {
 
-      setPackages: (state, action) => {
-        state.packages = action.payload 
-      },
+        setPackages: (state, action) => {
+            state.packages = action.payload 
+        },
 
-      addPackages: (state, action) => {
-        state.packages = state.packages + action.payload 
-      },
-
+        addPackages: (state, action) => {
+            state.packages = state.packages + action.payload 
+        },
 
     },
     extraReducers: (builder) => {
 
-      builder.addCase(savePackage.fulfilled, (state, action) => {
-        state.packages = action.payload;
-      });
+        builder.addCase(savePendingPackageThunk.fulfilled, (state, action) => {
+            state.packages = state.packages + 1;
+            state.pending = state.pending + 1;
+        });
 
-      builder.addCase(savePendingPackage.fulfilled, (state, action) => {
-        state.packages = state.packages + 1;
-        state.pending = action.payload;
-      });
+        builder.addCase(saveSentPackageThunk.fulfilled, (state, action) => {
+            state.packages = state.packages + 1;
+            state.sent = state.sent + 1;
+        });
 
-      builder.addCase(saveSentPackage.fulfilled, (state, action) => {
-        state.packages = state.packages + 1;
-        state.sent = action.payload;
-      });
+        builder.addCase(countDatabasePackagesThunk.fulfilled, (state, action) => {
+            state.packages = action.payload.packages;
+            state.pending = action.payload.pending;
+            state.sent = action.payload.sent;
+        });
+
+        builder.addCase(paginatePackagesThunk.fulfilled, (state, action) => {
+            state.totalPages = action.payload.totalPages;
+            state.pageList = action.payload.list;
+            state.packages = action.payload.packages;
+            state.page = action.payload.page;
+        });
 
 
-      builder.addCase(clearDatabase.fulfilled, (state, action) => {
-        state.packages = action.payload;
-      });
-
+        builder.addCase(clearDatabaseThunk.fulfilled, (state, action) => {
+            state.packages = 0;
+            state.pending = 0;
+            state.sent = 0;
+        });
 
     },
-  });
+});
   
-  export const { setPackages, addPackages } =  databaseSlice.actions;
-  
-  export default databaseSlice.reducer;
+export const { setPackages, addPackages } =  databaseSlice.actions;
+export default databaseSlice.reducer;

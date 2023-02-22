@@ -1,8 +1,9 @@
+// React Native, React Native Paper, and Expo components
 import * as React from 'react';
 import { View, SafeAreaView, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native-paper';
-import { Appbar, Divider, Button, SegmentedButtons } from 'react-native-paper';
+import { Appbar, Divider, Button, SegmentedButtons, Card, Switch, Avatar, List } from 'react-native-paper';
 
 // types
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,19 +13,35 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Packages'>;
 // redux
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store.redux';
-import { clearDatabase } from '../redux/database.slice';
+import { countDatabasePackagesThunk, paginatePackagesThunk } from '../redux/database.slice';
+import { startLocationUpdatesThunk, stopLocationUpdatesThunk } from '../redux/location.slice';
 
 // components
 import PackageList from '../components/packageList';
 
-import { startLocationUpdates, stopLocationUpdates, checkLocationUpdates } from '../utils/location.utils';
-import { getAllPackages, clearStorage } from '../utils/asyncStorage';
-
 export default function PackagesView({ navigation }: Props) {
 
+    // Redux state
     const dispatch = useDispatch<AppDispatch>();
-    const packagesData = useSelector((state: RootState) => state.database);
+    const database = useSelector((state: RootState) => state.database);
+    const locationData = useSelector((state: RootState) => state.location);
 
+    // Pagination controller
+    React.useEffect(()=>{
+        dispatch(countDatabasePackagesThunk());
+        dispatch(paginatePackagesThunk(0));
+    })
+
+    // Location tracking switch controller
+    const [isSwitchOn, setIsSwitchOn] = React.useState(false);
+    const onToggleSwitch = () => {
+        if (isSwitchOn) {
+            dispatch(stopLocationUpdatesThunk());
+        } else {
+            dispatch(startLocationUpdatesThunk());
+        }
+        setIsSwitchOn(!isSwitchOn);
+    }
 
   return (<>
 
@@ -39,36 +56,28 @@ export default function PackagesView({ navigation }: Props) {
         <Appbar.Content title="Package Sync" />
         <Appbar.Action icon="sync" onPress={() => {}} />
     </Appbar.Header>
-    
 
-    <View style={{paddingVertical: 8, paddingHorizontal: 12}}>
-      <SegmentedButtons
-        value={'pending'}
-        onValueChange={()=>{}}
-        buttons={[
-            {
-                value: 'pending',
-                label: 'Pending: ' + packagesData.pending
-            },
-            {
-                value: 'packages',
-                label: 'Total: ' + packagesData.packages,
-            },
+    <Card
+    style={{margin: 8}}
+    >
+        <Card.Title
+        title="GPS Tracking and Network"
+        subtitle={"Service is " + (locationData.locationUpdates ? 'ON' : 'OFF')}
+        right={() => <Switch value={isSwitchOn} onValueChange={onToggleSwitch}/>}
+        left={(props) => <Avatar.Icon {...props} icon="car-connected" />}
+        />
+        <Card.Content>    
 
-        ]}
-      />
-    </View>
+            <List.Item
+            title="Package Uploading"
+            description={()=><>
+                <Text>Sent: {database.sent} | Pending: {database.pending}</Text>
+            </>}
+            />
+        </Card.Content>
+    </Card>
 
-    <Button icon="package" mode="contained" onPress={() => startLocationUpdates()} style={{marginVertical: 8, marginHorizontal: 32}} >Start Tracking</Button>
-
-    <Button icon="package" mode="contained" onPress={() => stopLocationUpdates()} style={{marginVertical: 8, marginHorizontal: 32}} >Stop Tracking</Button>
-
-    <Button icon="package" mode="contained" onPress={() => checkLocationUpdates()} style={{marginVertical: 8, marginHorizontal: 32}} >Check Tracking</Button>
-
-    <Button icon="trash-can-outline" mode="contained" onPress={() => dispatch(clearDatabase())} style={{marginVertical: 8, marginHorizontal: 32}} >Clear Storage</Button>
-
-
-    <PackageList />
+    <PackageList/>
 
     </>);
 }

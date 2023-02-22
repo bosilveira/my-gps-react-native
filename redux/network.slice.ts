@@ -1,13 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiGetPoints } from "../utils/api.utils";
+import { apiGetPoints, apiSendPackage } from "../utils/api.utils";
 
-export const getPoints = createAsyncThunk(
-    "network/getPoints",
-    async ( args, { getState } ) => {
+export const sendPackage = createAsyncThunk(
+    "network/sendPackage",
+    async ( data: any, { getState } ) => {
         const state = getState() as any;
-        const result = await apiGetPoints(state.network.address, state.network.timeout);
-        return result;
+        const result = await apiSendPackage(data, state.network.address, state.network.timeout);
     }
 );
 
@@ -32,7 +31,7 @@ const restoreApiData = createAsyncThunk(
 const initialState = {
     address: 'http://192.168.1.3:8081',
     timeout: 4000,
-    token: '',
+    //token: '',
 } as any;
 
  const networkSlice = createSlice({
@@ -45,19 +44,13 @@ const initialState = {
         setAPITimeout: (state, action) => {
             state.timeout = action.payload;
         },
-        setAPIToken: (state, action) => {
-            state.timeout = action.payload;
-        },
+        // setAPIToken: (state, action) => {
+        //     state.timeout = action.payload;
+        // },
     },
     extraReducers: (builder) => {
-        builder.addCase(getPoints.fulfilled, (state, action) => {
-            state.result = action.payload;
-        });
         builder.addCase(restoreApiData.fulfilled, (state, action) => {
             state = { ...state, ...action.payload };
-        });
-        builder.addCase(getPoints.pending, (state, action) => {
-            state.loading = true;
         });
     },
 });
