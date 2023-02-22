@@ -68,13 +68,13 @@ export default function HomePage({ navigation }: Props) {
 
         <Portal>
             <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={{backgroundColor: 'white', margin: 24, padding: 24}}>
-            <Button icon="sync" mode="contained" onPress={() => navigation.navigate('Packages')} style={{marginVertical: 4}}>Packages</Button>
-            <Button icon="broadcast" mode="contained" onPress={() => navigation.push('Location')} style={{marginVertical: 4}}>Location</Button>
             <Button icon="link" mode="contained" onPress={() => navigation.navigate('Network')} style={{marginVertical: 4}} >Network</Button>
-            <Button icon="security" mode="contained" onPress={() => navigation.navigate('Security')} style={{marginVertical: 4}}>Security</Button>
+            <Button icon="broadcast" mode="contained" onPress={() => navigation.push('Location')} style={{marginVertical: 4}}>Location</Button>
+            <Button icon="sync" mode="contained" onPress={() => navigation.navigate('Packages')} style={{marginVertical: 4}}>Packages</Button>
             <Button icon="information-outline" mode="contained" onPress={() => navigation.navigate('Disclaimer')} style={{marginVertical: 4}}>Disclaimer</Button>
             <Divider style={{marginVertical: 8}} />
             <Button icon="help-circle-outline" mode="contained" onPress={() => navigation.navigate('Help')} style={{marginVertical: 4}}>Help</Button>
+            <Button icon="security" mode="contained" onPress={() => navigation.navigate('Security')} style={{marginVertical: 4}}>Security</Button>
             </Modal>
         </Portal>
 
