@@ -1,4 +1,9 @@
 import * as Location from 'expo-location';
+import * as TaskManager from 'expo-task-manager';
+import { store } from '../redux/store.redux';
+import { setLocation, setWatchPosition, setPackages, addPackages } from '../redux/location.slice';
+import { savePackage } from '../redux/database.slice';
+import { storePackage, countAllPackages } from './asyncStorage';
 
 export const checkLocationPermission = async () => {
     const foregroundPermission = await Location.getForegroundPermissionsAsync();
@@ -34,13 +39,43 @@ export const getPosition = async () => {
     return { last, current };
 }
 
-export const watchPosition = async (accuracy: number, distanceInterval: number, callback = (location: any)=>{}) => {
+// foreground tracking
+export const watchPosition = async (accuracy: number, distanceInterval: number) => {
+    store.dispatch(setWatchPosition(true));
     const subscription = await Location.watchPositionAsync(
         { accuracy, distanceInterval },
         (location)=>{
-            const { locations } = location as any;
-            callback(location);
+            store.dispatch(setLocation(location));
         }
     );
     return subscription;
+}
+
+// background tracking
+export const startLocationUpdates = async (accuracy=6, deferredUpdatesInterval=0, deferredUpdatesTimeout=0,
+    killServiceOnDestroy=true, notificationTitle='Location Tracking', notificationBody='Location Tracking is Active', notificationColor="#CCCCFF") => {
+    const count = await countAllPackages();
+    setPackages(count);
+    const task = await Location.startLocationUpdatesAsync("MY_GPS_LOCATION", {
+        accuracy, deferredUpdatesInterval, deferredUpdatesTimeout, foregroundService: {killServiceOnDestroy, notificationTitle, notificationBody, notificationColor}
+    });
+    TaskManager.defineTask("MY_GPS_LOCATION", ({ data, error }) => {
+        if (error) {
+            // check `error.message` for more details.
+            return;
+        }
+        if (data) {
+            const { locations } = data as any;
+            store.dispatch(setLocation(locations[0]));
+            store.dispatch(savePackage(locations[0]));
+        }
+    });
+}
+
+export const stopLocationUpdates = async ( ) => {
+    const task = await Location.stopLocationUpdatesAsync("MY_GPS_LOCATION");
+}
+
+export const checkLocationUpdates = async ( ) => {
+    const check = await Location.hasStartedLocationUpdatesAsync("MY_GPS_LOCATION");
 }

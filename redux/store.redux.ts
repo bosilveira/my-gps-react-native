@@ -1,14 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import locationReducer from "./location.slice";
 import networkReducer from "./network.slice";
-import batteryReducer from "./battery.slice";
+import databaseReducer from "./database.slice";
 
 export function makeStore() {
     return configureStore({
       reducer: {
         network: networkReducer,
         location: locationReducer,
-        battery: batteryReducer
+        database: databaseReducer
     },
     });
 }

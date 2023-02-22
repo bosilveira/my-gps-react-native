@@ -2,15 +2,15 @@ import * as React from 'react';
 import { View, SafeAreaView, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native-paper';
-import { Appbar, Divider, Button, List } from 'react-native-paper';
+import { Appbar, Divider, Button, List, ActivityIndicator } from 'react-native-paper';
 import * as Battery from 'expo-battery';
 import { BatteryState } from 'expo-battery/build/Battery.types';
-import { checkLocationPermission, requestLocationPermission, getPosition } from '../utils/location.utils';
 
 // redux
 import { AppDispatch, RootState } from '../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
-import { watchPosition } from '../redux/location.slice';
+import { checkLocationPermission, requestLocationPermission, getPosition, watchPosition } from '../utils/location.utils';
+import { setWatchPosition } from '../redux/location.slice';
 
 import PositionWatcher from '../components/positionWatcher';
 
@@ -43,9 +43,23 @@ export default function LocationView({ navigation }: Props) {
     }
 
     React.useEffect(()=>{
-        getLocationPermissionHandler()
+        getLocationPermissionHandler();
+    }, [])
+
+
+    React.useEffect(()=>{
         Battery.getPowerStateAsync().then(power => setBattery(power));
-    })
+    }, [locationData.location.timestamp])
+
+    React.useEffect(()=>{
+        if (locationData.watchPosition) {
+            const watcher = watchPosition(locationData.accuracy, locationData.distanceInterval)
+            return () => {
+                watcher.then((subscription)=>subscription.remove())
+            }
+        }
+    },[locationData.watchPosition])
+
 
     return (<>
 
@@ -115,7 +129,67 @@ export default function LocationView({ navigation }: Props) {
 
         <Divider style={{marginVertical: 8}} />
 
-        <PositionWatcher />
+        <Button
+        icon={locationData.watchPosition ? ()=><ActivityIndicator animating={locationData.watchPosition} color={'white'}/> : "radar"}
+        mode="contained"
+        onPress={() => dispatch(setWatchPosition(!locationData.watchPosition))}
+        style={{marginVertical: 8, marginHorizontal: 32}}
+        >
+        Watch Position
+        </Button>
+
+        <List.Section
+        style={{marginVertical: 4, marginHorizontal: 16}}
+        >
+
+            <List.Accordion
+            title={locationData.watchPosition ? "Position Tracking ON" : "Position Tracking OFF"}
+            left={props => <List.Icon {...props} icon={ locationData.watchPosition ? "map-marker-radius-outline" : "map-marker-off-outline"} />}>
+
+                <List.Item
+                title="Last Update"
+                description={(()=> { let date = new Date(); date.setTime(locationData.location.timestamp); return date.toTimeString() })()}
+                left={props => <List.Icon {...props} icon="update" />}
+                />
+
+                <List.Item
+                title="Latitude"
+                description={locationData.location.coords.latitude}
+                left={props => <List.Icon {...props} icon="latitude" />}
+                />
+
+                <List.Item
+                title="Longitude"
+                description={locationData.location.coords.longitude}
+                left={props => <List.Icon {...props} icon="longitude" />}
+                />
+
+                <List.Item
+                title="Altitude"
+                description={locationData.location.coords.altitude}
+                left={props => <List.Icon {...props} icon="altimeter" />}
+                />
+
+                <List.Item
+                title="Speed"
+                description={locationData.location.coords.speed}
+                left={props => <List.Icon {...props} icon="speedometer" />}
+                />
+
+                <List.Item
+                title="Compass"
+                description={locationData.location.coords.heading}
+                left={props => <List.Icon {...props} icon="compass" />}
+                />
+
+                <List.Item
+                title="Accuracy"
+                description={locationData.location.coords.accuracy}
+                left={props => <List.Icon {...props} icon="crosshairs-gps" />}
+                />
+
+            </List.Accordion>
+        </List.Section>
 
     </ScrollView>
 
