@@ -1,3 +1,4 @@
+// React Native, React Native Paper, and Expo components
 import * as React from 'react';
 import { View, SafeAreaView, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';

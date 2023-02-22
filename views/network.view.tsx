@@ -1,7 +1,8 @@
+// React Native, React Native Paper, and Expo components
 import * as React from 'react';
-import { StatusBar } from 'expo-status-bar';
 import { ScrollView } from 'react-native';
 import { Appbar, Snackbar, Button, Text, TextInput, Divider, List, RadioButton } from 'react-native-paper';
+import { StatusBar } from 'expo-status-bar';
 
 // types
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -9,23 +10,34 @@ import type { RootStackParamList } from '../App';
 type Props = NativeStackScreenProps<RootStackParamList, 'Network'>;
 
 // redux
-import { AppDispatch, RootState } from '../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
+import { AppDispatch, RootState } from '../redux/store.redux';
 import { setAPIAddress, setAPITimeout } from '../redux/network.slice';
+
+// utils
 import { apiCheckConnection } from '../utils/api.utils';
 
 export default function NetworkView({ navigation }: Props) {
   
-    const networkData = useSelector((state: RootState) => state.network);
+    // Redux
+    const network = useSelector((state: RootState) => state.network);
     const dispatch = useDispatch<AppDispatch>();
 
-    const [success, setSuccess] = React.useState(false);
-    const [error, setError] = React.useState(false);
-
+    // API Address checking: show snackbar (bottom message) and text
+    // Snackbar controllers    
+    const [connectionTest, setConnectionTest] = React.useState('');
+    const [snackbarVisible, setSnackbarVisible] = React.useState(false);
     const apiCheckHandler = async () => {
-        const result = await apiCheckConnection(networkData.address + '/points/', networkData.timeout);
-        setSuccess(result.success);
-        setError(result.error);
+        setConnectionTest('Verifying connection');
+        setSnackbarVisible(true);
+        setTimeout(async () => {
+            const result = await apiCheckConnection(network.address + '/points/', network.timeout);
+            if (result) {
+                setConnectionTest('API is Connected!');
+            } else {
+                setConnectionTest('Could not connect to API!');
+            }
+        }, 1000);
     }
 
     return (<>
@@ -44,16 +56,9 @@ export default function NetworkView({ navigation }: Props) {
 
     <Snackbar
     elevation={5}
-    visible={success}
+    visible={snackbarVisible}
     onDismiss={()=>{}}>
-        API is Connected!
-    </Snackbar>
-
-    <Snackbar
-    elevation={5}
-    visible={error}
-    onDismiss={()=>{}}>
-        Could not connect to API!
+        {connectionTest}
     </Snackbar>
 
     <ScrollView>
@@ -67,8 +72,8 @@ export default function NetworkView({ navigation }: Props) {
         <TextInput
         mode="outlined"
         label="API Address"
-        placeholder="http://192.168.1.4:8081"
-        value={networkData.address}
+        placeholder="http://192.168.0.1:8081"
+        value={network.address}
         onChangeText={text => dispatch(setAPIAddress(text))}
         right={<TextInput.Icon icon="link" />}
         style={{marginVertical: 8, marginHorizontal: 12}}
@@ -86,9 +91,9 @@ export default function NetworkView({ navigation }: Props) {
         style={{marginVertical: 4, marginHorizontal: 12}}
         >
             <List.Accordion
-                title={"Timeout (milliseconds): " + networkData.timeout.toString()}
+                title={"Timeout (milliseconds): " + network.timeout.toString()}
                 left={props => <List.Icon {...props} icon="timer-outline" />}>
-                <RadioButton.Group onValueChange={value => dispatch(setAPITimeout(parseInt(value)))} value={networkData.timeout.toString()}>
+                <RadioButton.Group onValueChange={value => dispatch(setAPITimeout(parseInt(value)))} value={network.timeout.toString()}>
                 <RadioButton.Item label="1000 milliseconds (1s)" value="1000" />
                 <RadioButton.Item label="2000 milliseconds (2s)" value="2000" />
                 <RadioButton.Item label="3000 milliseconds (3s)" value="3000" />

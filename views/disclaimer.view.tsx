@@ -1,3 +1,4 @@
+// React Native, React Native Paper, and Expo components
 import * as React from 'react';
 import { View, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -9,7 +10,10 @@ import type { RootStackParamList } from '../App';
 type Props = NativeStackScreenProps<RootStackParamList, 'Disclaimer'>;
 
 export default function DisclaimerPage({ navigation }: Props) {
+
+    // Language controller
     const [language, setLanguage] = React.useState('pt-BR');
+
     return (<>
 
     <StatusBar 

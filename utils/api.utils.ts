@@ -1,23 +1,32 @@
-export const apiFetch = async ( request: Request, timeout: number, status: number ) => {
+import axios, {isCancel, AxiosError} from 'axios';
+import { store } from '../redux/store.redux';
+import { savePendingPackageThunk, saveSentPackageThunk } from '../redux/database.slice';
 
-    const controller = new AbortController();
-    const abortSignal = setTimeout(() => controller.abort(), timeout);
-
-    request = { ...request, signal: controller.signal}
-
-    await fetch(request)
-        .then((response) => {
-          if (response.status !== status) {
-            throw Error('status');
-            } else {
-                clearTimeout(abortSignal)
-                const data = response.json()                
-                return data;
-            }
-        })
-        .catch((error) => {
-            throw error;
-        });
+export const apiSendPackage = async (data: any, address: string, timeout: number = 0) => {
+    await axios({
+        method: 'post',
+        url: '/points/' + data.timestamp,
+        baseURL: address,
+        timeout,
+        data: {
+            id: data.coords.timestamp,
+            latitude: data.coords.latitude,
+            longitude: data.coords.longitude,
+            speed: data.coords.speed,
+            time: data.timestamp
+        }
+    })
+    .then((response) => {
+        if (response.status === 201) {
+            store.dispatch(saveSentPackageThunk(data));
+        } else {
+            store.dispatch(savePendingPackageThunk(data));
+        }
+    })
+    .catch((error)=> {
+        console.log(error);
+        store.dispatch(savePendingPackageThunk(data));
+    });
 }
 
 export const apiGetPoints = async (address: string, timeout: number) => {
@@ -53,27 +62,23 @@ export const apiGetPoints = async (address: string, timeout: number) => {
 }
 
 
-export const apiCheckConnection = async (url: string, timeout: number) => {
-    let result = {
-        start: 0,
-        end: 0,
-        success: false,
-        error: false
-    }
-    const controller = new AbortController();
-    const abortSignal = setTimeout(() => controller.abort(), timeout);
-    result.start = Date.now();
-    await fetch(url, {
-        method: 'GET',
-        signal: controller.signal
-    }).then((response) => {
+export const apiCheckConnection = async (address: string, timeout: number) => {
+    const result = await axios({
+        method: 'get',
+        url: '/points/',
+        baseURL: address,
+        timeout,
+    })
+    .then((response) => {
         if (response.status === 200) {
-            result.success = true;
-            result.end = Date.now();
+            return true;
+        } else {
+            return false;
         }
-    }).catch((error) => {
-        result.error = true;
-        result.end = Date.now();
+    })
+    .catch((error)=> {
+        console.log('check connection error', error);
+        return false;
     });
     return result;
 }

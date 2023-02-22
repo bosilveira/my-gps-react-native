@@ -2,14 +2,24 @@ import * as React from 'react';
 import { View, SafeAreaView, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native-paper';
-import { Appbar, Divider } from 'react-native-paper';
+import { Appbar, Divider, Button } from 'react-native-paper';
 
 // types
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
 type Props = NativeStackScreenProps<RootStackParamList, 'Security'>;
 
+// redux
+import { useSelector, useDispatch } from 'react-redux';
+import { AppDispatch, RootState } from '../redux/store.redux';
+import { clearDatabaseThunk, countDatabasePackagesThunk } from '../redux/database.slice';
+
 export default function SecurityPage({ navigation }: Props) {
+
+    // Redux state
+    const dispatch = useDispatch<AppDispatch>();
+    const packagesData = useSelector((state: RootState) => state.database);
+
     return (<>
     
     <StatusBar 
@@ -23,6 +33,9 @@ export default function SecurityPage({ navigation }: Props) {
         <Appbar.Content title="Security" />
         <Appbar.Action icon="security" onPress={() => {}} />
     </Appbar.Header>
+
+    <Button icon="trash-can-outline" mode="contained" onPress={() => dispatch(clearDatabaseThunk())} style={{marginVertical: 8, marginHorizontal: 32}} >Clear Storage</Button>
+
 
     </>);
 }
