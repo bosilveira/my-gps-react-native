@@ -51,6 +51,8 @@ Para implementar um projeto Expo React Native, a informação foi inicialmente e
 
 Neste projeto React Native, implementamos uma estrutura de navegação para facilitar a experiência do usuário. A partir da tela inicial (Home), o usuário tem acesso a quatro opções principais: "Network (Rede)" (para configurar a API), "Location (Localização)" (para configurar a localização por GPS), "Packages (Pacotes)" (para acessar a base de dados de pacotes) e "Disclaimer (Aviso Legal)" (para informar o usuário sobre o uso de seus dados). Ao selecionar uma das opções, o usuário será direcionado à próxima tela, onde poderá realizar as configurações ou confirmar o uso de seus dados. Esta estrutura de navegação foi projetada para tornar a experiência do usuário mais fácil e intuitiva.
 
+![telas](MyGPSTelas.png)
+
 ## Agradecimentos
 
 Obrigado por ler a documentação! Sou Braulio Silveira, meu perfil no GitHub é https://github.com/bosilveira e sou um desenvolvedor full stack.
