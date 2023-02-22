@@ -27,6 +27,15 @@ export const storeSentPackage = async (location: LocationObject) => {
     }
 }
 
+export const deletePendingPackage = async (location: LocationObject) => {
+    try {
+        await AsyncStorage.removeItem('@PEND_' + location.timestamp)
+    } catch (e) {
+        // saving error
+    }
+}
+
+
 export const deletePackage = async (packageId: string) => {
     try {
         await AsyncStorage.removeItem(packageId)
@@ -64,6 +73,18 @@ export const getPackagesPerPage = async (page: number) => {
         // read key error
     }
     const list = keys.filter((item: string)=> item[0] === '@');
+    list.sort();
+    return { list: list.slice(10*page,10*page+10), totalPages: Math.trunc(list.length / 10), packages: list.length }
+}
+
+export const getPackagesPerPageAndType = async ( page: number, type: string ) => {
+    let keys = [];
+    try {
+        keys = await AsyncStorage.getAllKeys() as any
+    } catch(e) {
+        // read key error
+    }
+    const list = keys.filter((item: string)=> item.slice(0,5) === type);
     list.sort();
     return { list: list.slice(10*page,10*page+10), totalPages: Math.trunc(list.length / 10), packages: list.length }
 }

@@ -4,16 +4,17 @@ import { ActivityIndicator, MD2Colors } from 'react-native-paper';
 import * as Battery from 'expo-battery';
 import { View, ScrollView, RefreshControl } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Appbar, Button, Card, Avatar, Text, Divider, List, RadioButton, SegmentedButtons } from 'react-native-paper';
+import { Appbar, Button, Card, Avatar, Text, Divider, List, RadioButton, SegmentedButtons, IconButton } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 
 // redux
 import { AppDispatch, RootState } from '../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
-import { paginatePackagesThunk } from '../redux/database.slice';
+import { paginatePackagesThunk, deletePendingPackageThunk } from '../redux/database.slice';
 
 // utils
 import { getPackageById} from '../utils/asyncStorage';
+import { apiReSendPackage } from '../utils/api.utils';
 
 // types
 import { LocationObject } from 'expo-location';
@@ -52,12 +53,14 @@ import { millisecondsToTime } from '../utils/location.utils';
 
 interface Props {
     packageId?: string,
+    pending: boolean
 }
 
-export default function PackageCard( { packageId }: Props ) {
+export default function PackageCard( { packageId, pending }: Props ) {
 
     const locationData = useSelector((state: RootState) => state.location);
     const database = useSelector((state: RootState) => state.database);
+    const network = useSelector((state: RootState) => state.network);
     const dispatch = useDispatch<AppDispatch>();
 
     const { navigate } = useNavigation<Nav>()
@@ -107,7 +110,7 @@ export default function PackageCard( { packageId }: Props ) {
     <>
 
     <Card
-    onPress={() => navigate( 'SinglePackage', {packageId: packageData.id}) }
+    onPress={() => navigate( 'SinglePackage', {packageId: packageId}) }
     style={{margin: 8, opacity}}
     >
         <Card.Content>
@@ -117,7 +120,7 @@ export default function PackageCard( { packageId }: Props ) {
                     <Text variant="titleMedium">Package: {packageData.id}</Text>
                     <Text variant="titleSmall">{millisecondsToTime(packageData.location.timestamp)}</Text>
                 </View>
-                <Avatar.Icon size={32} icon="sync" />
+                { pending && <IconButton size={32} icon="sync" onPress={()=>apiReSendPackage(packageData.location, network.address, network.timeout)} /> }
             </View>
 
             <View style={{display: 'flex', flexDirection: 'row', justifyContent:'flex-start', alignItems: 'center', marginVertical: 2}}>

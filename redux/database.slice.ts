@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { LocationObject } from 'expo-location';
-import { storePackage, clearStorage, storePendingPackage, storeSentPackage, deletePackage, countPendingPackages, countSentPackages, getPackagesPerPage } from "../utils/asyncStorage";
+import { storePackage, clearStorage, storePendingPackage, storeSentPackage, deletePackage, deletePendingPackage, countPendingPackages,
+    countSentPackages, getPackagesPerPage, getPackagesPerPageAndType } from "../utils/asyncStorage";
 
 // save package as PENDING
 export const savePendingPackageThunk = createAsyncThunk(
@@ -39,9 +40,10 @@ export const countDatabasePackagesThunk = createAsyncThunk(
 // get packages per page
 export const paginatePackagesThunk = createAsyncThunk(
     "database/getPackagesPerPage",
-    async ( page: number ) => {
-        const { list, totalPages, packages } = await getPackagesPerPage(page);
-        return { list, page, totalPages, packages };
+    async ( args: any ) => {
+        const { page, type } = args;
+        const { list, totalPages, packages } = await getPackagesPerPageAndType(page, type);
+        return { list, totalPages, packages, page, type };
     }
 );
 
@@ -54,6 +56,15 @@ export const clearDatabaseThunk = createAsyncThunk(
     }
 );
 
+// delete pending package
+export const deletePendingPackageThunk = createAsyncThunk(
+    "database/clearDatabase",
+    async ( location: LocationObject) => {
+        await deletePendingPackage(location);
+    }
+);
+
+
 const initialState = {
     packages: 0,
     pending: 0,
@@ -61,6 +72,7 @@ const initialState = {
     totalPages: 0,
     page: 0,
     pageList: [],
+    type: '@PEND',
     loading: false
 } as any;
 
@@ -68,6 +80,10 @@ const databaseSlice = createSlice({
     name: "database",
     initialState,
     reducers: {
+
+        setType: (state, action) => {
+            state.type = action.payload 
+        },
 
         setPackages: (state, action) => {
             state.packages = action.payload 
@@ -101,6 +117,7 @@ const databaseSlice = createSlice({
             state.pageList = action.payload.list;
             state.packages = action.payload.packages;
             state.page = action.payload.page;
+            state.type = action.payload.type;
         });
 
 
@@ -113,5 +130,5 @@ const databaseSlice = createSlice({
     },
 });
   
-export const { setPackages, addPackages } =  databaseSlice.actions;
+export const { setType, setPackages, addPackages } =  databaseSlice.actions;
 export default databaseSlice.reducer;

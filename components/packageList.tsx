@@ -58,7 +58,7 @@ export default function PackageList( ) {
     const previousPage = () => {
         setOpacity(.2);
         if (database.page > 0) {
-            dispatch(paginatePackagesThunk(database.page - 1));
+            dispatch(paginatePackagesThunk({page: database.page - 1, type: database.type}));
         }
         setOpacity(1);
     }
@@ -66,14 +66,14 @@ export default function PackageList( ) {
     const nextPage = () => {
         setOpacity(.2)
         if (database.page < database.totalPages) {
-            dispatch(paginatePackagesThunk(database.page + 1));
+            dispatch(paginatePackagesThunk({page: database.page + 1, type: database.type}));
         }
         setOpacity(1);
     }
 
     const onRefresh = React.useCallback(async () => {
         setRefreshing(true);
-        dispatch(paginatePackagesThunk(0));
+        dispatch(paginatePackagesThunk({page: database.page, type: database.type}))
         setOpacity(.2);
         setTimeout(() => {
           setRefreshing(false);
@@ -107,7 +107,7 @@ export default function PackageList( ) {
     }>
 
         <View>
-            {database.pageList.length > 0 && database.pageList.map((item: any, index: any)=><PackageCard key={item} packageId={item} />)}
+            {database.pageList.length > 0 && database.pageList.map((item: any, index: any)=><PackageCard key={item} packageId={item} pending={database.type === '@PEND'} />)}
         </View>
 
     </ScrollView>

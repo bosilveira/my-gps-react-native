@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiGetPoints, apiSendPackage } from "../utils/api.utils";
+import { apiGetPoints, apiSendPackage, apiReSendPackage } from "../utils/api.utils";
 
 export const sendPackage = createAsyncThunk(
     "network/sendPackage",
@@ -9,6 +9,16 @@ export const sendPackage = createAsyncThunk(
         const result = await apiSendPackage(data, state.network.address, state.network.timeout);
     }
 );
+
+export const reSendPackage = createAsyncThunk(
+    "network/reSendPackage",
+    async ( data: any, { getState } ) => {
+        const state = getState() as any;
+        const result = await apiReSendPackage(data, state.network.address, state.network.timeout);
+    }
+);
+
+
 
 const restoreApiData = createAsyncThunk(
     "network/restoreApiData",

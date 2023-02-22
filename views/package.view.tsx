@@ -13,32 +13,61 @@ type Props = NativeStackScreenProps<RootStackParamList, 'SinglePackage'>;
 // redux
 import { AppDispatch, RootState } from '../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
+import { paginatePackagesThunk } from '../redux/database.slice';
 
 // utils
-import { watchPosition } from '../utils/location.utils';
+import { getPackageById} from '../utils/asyncStorage';
+import { millisecondsToTime } from '../utils/location.utils';
 
 export default function SinglePackageView({ route, navigation }: Props) {
 
-      /* 2. Get the param */
-  const { packageId } = route.params;
+    const { packageId } = route.params;
 
     const locationData = useSelector((state: RootState) => state.location);
+    const database = useSelector((state: RootState) => state.database);
     const dispatch = useDispatch<AppDispatch>();
 
-    const millisecondsToTime = (ms: number)=> {
-        let date = new Date();
-        date.setTime(ms);
-        return date.toTimeString() 
-    }
-
-    React.useEffect(()=>{
-        if (locationData.watchPosition) {
-            const watcher = watchPosition(locationData.accuracy)
-            return () => {
-                watcher.then((subscription)=>subscription.remove())
-            }
+    const [loading, setLoading] = React.useState(false);
+    const [opacity, setOpacity] = React.useState(1);
+    const [packageData, setPackageData] = React.useState({
+        id: '',
+        location: {
+            coords:
+            {
+                accuracy: 0,
+                altitude: 0,
+                altitudeAccuracy: 0,
+                heading: 0,
+                latitude: 0,
+                longitude: 0,
+                speed: 0
+            }, 
+            mocked: true,
+            timestamp: 0
+        },
+        power: {
+            batteryLevel: 0,
+            batteryState: 0,
+            batteryLowPowerMode: false
         }
-    },[locationData.watchPosition])
+    });
+
+  const getPackage = React.useCallback(async () => {
+      setLoading(true);
+      setOpacity(.4)
+      if (packageId) {
+          const packageInfo = await getPackageById(packageId);
+          setPackageData(packageInfo)
+      }
+      setLoading(false);
+      setOpacity(1)
+    }, [])
+    
+    React.useEffect(() => {
+      getPackage()
+        .catch(console.error);;
+    }, [getPackage])
+
 
     return (<>
 
@@ -62,49 +91,49 @@ export default function SinglePackageView({ route, navigation }: Props) {
 
                 <List.Item
                 title="Package Id"
-                description={packageId}
+                description={packageData && packageData.id}
                 left={props => <List.Icon {...props} icon="tag" />}
                 />
 
                 <List.Item
                 title="Timestamp"
-                description={()=> locationData.watchPosition ? <Text>{millisecondsToTime(locationData.location.timestamp)}</Text> : null}
+                description={()=> packageData ? <Text>{millisecondsToTime(packageData.location.timestamp)}</Text> : null}
                 left={props => <List.Icon {...props} icon="update" />}
                 />
 
                 <List.Item
                 title="Latitude"
-                description={()=> locationData.watchPosition ? <Text>{locationData.location.coords.latitude}</Text> : null}
+                description={()=> packageData ? <Text>{packageData.location.coords.latitude}</Text> : null}
                 left={props => <List.Icon {...props} icon="latitude" />}
                 />
 
                 <List.Item
                 title="Longitude"
-                description={()=> locationData.watchPosition ? <Text>{locationData.location.coords.longitude}</Text> : null}
+                description={()=> packageData ? <Text>{packageData.location.coords.longitude}</Text> : null}
                 left={props => <List.Icon {...props} icon="longitude" />}
                 />
 
                 <List.Item
                 title="Altitude"
-                description={()=> locationData.watchPosition ? <Text>{locationData.location.coords.altitude}</Text> : null}
+                description={()=> packageData ? <Text>{packageData.location.coords.altitude}</Text> : null}
                 left={props => <List.Icon {...props} icon="altimeter" />}
                 />
 
                 <List.Item
                 title="Speed"
-                description={()=> locationData.watchPosition ? <Text>{locationData.location.coords.speed}</Text> : null}
+                description={()=> packageData ? <Text>{packageData.location.coords.speed}</Text> : null}
                 left={props => <List.Icon {...props} icon="speedometer" />}
                 />
 
                 <List.Item
                 title="Compass"
-                description={()=> locationData.watchPosition ? <Text>{locationData.location.coords.heading}</Text> : null}
+                description={()=> packageData ? <Text>{packageData.location.coords.heading}</Text> : null}
                 left={props => <List.Icon {...props} icon="compass" />}
                 />
 
                 <List.Item
                 title="Accuracy"
-                description={()=> locationData.watchPosition ? <Text>{locationData.location.coords.accuracy}</Text> : null}
+                description={()=> packageData ? <Text>{packageData.location.coords.accuracy}</Text> : null}
                 left={props => <List.Icon {...props} icon="crosshairs-gps" />}
                 />
 

@@ -13,7 +13,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Packages'>;
 // redux
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store.redux';
-import { countDatabasePackagesThunk, paginatePackagesThunk } from '../redux/database.slice';
+import { countDatabasePackagesThunk, paginatePackagesThunk, setType } from '../redux/database.slice';
 import { startLocationUpdatesThunk, stopLocationUpdatesThunk } from '../redux/location.slice';
 
 // components
@@ -29,8 +29,8 @@ export default function PackagesView({ navigation }: Props) {
     // Pagination controller
     React.useEffect(()=>{
         dispatch(countDatabasePackagesThunk());
-        dispatch(paginatePackagesThunk(0));
-    })
+        //dispatch(paginatePackagesThunk({page: 0, type: database.type}))
+    },[])
 
     // Location tracking switch controller
     const [isSwitchOn, setIsSwitchOn] = React.useState(false);
@@ -53,29 +53,27 @@ export default function PackagesView({ navigation }: Props) {
     
     <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
-        <Appbar.Content title="Package Sync" />
+        <Appbar.Content title={"Package Sync"} />
         <Appbar.Action icon="sync" onPress={() => {}} />
     </Appbar.Header>
 
-    <Card
-    style={{margin: 8}}
-    >
-        <Card.Title
-        title="GPS Tracking and Network"
-        subtitle={"Service is " + (locationData.locationUpdates ? 'ON' : 'OFF')}
-        right={() => <Switch value={isSwitchOn} onValueChange={onToggleSwitch}/>}
-        left={(props) => <Avatar.Icon {...props} icon="car-connected" />}
-        />
-        <Card.Content>    
 
-            <List.Item
-            title="Package Uploading"
-            description={()=><>
-                <Text>Sent: {database.sent} | Pending: {database.pending}</Text>
-            </>}
-            />
-        </Card.Content>
-    </Card>
+    <View style={{paddingVertical: 8, paddingHorizontal: 12}}>
+      <SegmentedButtons
+        value={database.type}
+        onValueChange={(value)=>dispatch(paginatePackagesThunk({page: 0, type: value}))}
+        buttons={[
+            {
+                value: '@SENT',
+                label: 'Sent ' + database.sent
+            },
+            {
+                value: '@PEND',
+                label: 'Pending ' + database.pending,
+            },
+        ]}
+      />
+    </View>
 
     <PackageList/>
 
