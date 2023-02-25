@@ -1,11 +1,15 @@
+// React Native, and Expo components
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 
+//types
+import { LocationObject } from 'expo-location';
+
 // redux
 import { store } from '../redux/store.redux';
-import { setCurrentPosition, setWatchPosition } from '../redux/location.slice';
-import { storePackage, countAllPackages } from './asyncStorage';
-import { sendPackage } from '../redux/network.slice';
+import { setCurrentPosition } from '../redux/location.slice';
+import { saveLocationPackage, countLocationPackages } from './asyncStorage';
+import { countLocationPackagesThunk, reloadLocationPackagesThunk } from '../redux/database.slice';
 
 // 1) LOCATION PERMISSIONS
 
@@ -56,44 +60,49 @@ export const getCurrentPosition = async (accuracy:number=6) => {
 }
 
 // 2.2) Start foreground location tracking
-export const watchPosition = async (accuracy:number) => {
-    store.dispatch(setWatchPosition(true));
+export const watchPosition = async (accuracy:number, getPosition: (position: LocationObject) => void) => {
     const subscription = await Location.watchPositionAsync({ accuracy },
         (location)=>{
-            store.dispatch(setCurrentPosition(location));
+            getPosition(location);
         }
     );
     return subscription;
 }
 
-// 3) BACKGROUND TRACKING
+// 3) BACKGROUND TRACKING (MAIN)
+
+const locationTaskName = "MY_GPS_LOCATION";
 
 // 3.1) Start background location tracking
 export const startLocationUpdates = async (accuracy=6, deferredUpdatesInterval=0) => {
-    const count = await countAllPackages();
+    const count = await countLocationPackages();
     //setPackages(count);
-    const task = await Location.startLocationUpdatesAsync("MY_GPS_LOCATION", { accuracy, deferredUpdatesInterval });
-    TaskManager.defineTask("MY_GPS_LOCATION", ({ data, error }) => {
+    const task = await Location.startLocationUpdatesAsync(locationTaskName, { accuracy, deferredUpdatesInterval });
+    TaskManager.defineTask(locationTaskName, ({ data, error }) => {
         if (error) {
             console.log('taskmanager error', error);
         }
         if (data) {
             const { locations } = data as any;
-            store.dispatch(setCurrentPosition(locations[0]));
-            store.dispatch(sendPackage(locations[0]));
+            (async()=>{
+                await saveLocationPackage(locations[0].timestamp, locations[0]);
+                await store.dispatch(countLocationPackagesThunk());
+            })()
         }
     });
 }
 
 // 3.2) check if background location tracking is active and return boolean
 export const checkLocationUpdates = async ( ) => {
-    const check = await Location.hasStartedLocationUpdatesAsync("MY_GPS_LOCATION");
+    const check = await Location.hasStartedLocationUpdatesAsync(locationTaskName);
     return check;
 }
 
 // 3.3) stop background location tracking
 export const stopLocationUpdates = async ( ) => {
-    const task = await Location.stopLocationUpdatesAsync("MY_GPS_LOCATION");
+    const task = await Location.stopLocationUpdatesAsync(locationTaskName);
+    await store.dispatch(reloadLocationPackagesThunk());
+    return task;
 }
 
 // 4) convert milliseconds to date

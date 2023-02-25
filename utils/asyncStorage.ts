@@ -1,7 +1,100 @@
+// React Native, and Expo components
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Battery from 'expo-battery';
 import * as Device from 'expo-device';
 import { LocationObject } from 'expo-location';
+
+
+// Location Package Database Entry Prefix
+const packagePrefix = "@_";
+
+// Save Location Package Entry into Database (AsyncStorage)
+export const saveLocationPackage = async (packageId: string, location: LocationObject) => {
+    const power = await Battery.getPowerStateAsync();
+    const status = 'pending';
+    const item = { packageId, location, power, status }
+    try {
+        const jsonValue = JSON.stringify(item)
+        await AsyncStorage.setItem(packagePrefix + packageId, jsonValue)
+    } catch (e) {
+        // saving error
+    }
+}
+
+// Retrieve Location Package by packageId from Database (AsyncStorage)
+export const getLocationPackageById = async (packageId: string) => {
+    try {
+        const jsonValue = await AsyncStorage.getItem(packagePrefix + packageId)
+        return jsonValue != null ? JSON.parse(jsonValue) : null
+    } catch(e) {
+        // read error
+    }
+}
+
+// Update Location Package status in Database (AsyncStorage)
+export const updateLocationPackageStatus = async (packageId: string, status: string) => {
+    const update = { status }
+    try {
+        await AsyncStorage.mergeItem(packagePrefix + packageId, JSON.stringify(update));
+    } catch (e) {
+        // saving error
+    }
+}
+
+// Delete Location Package status (AsyncStorage)
+export const deleteLocationPackage = async (packageId: string) => {
+    try {
+        await AsyncStorage.removeItem(packagePrefix + packageId)
+    } catch (e) {
+        // saving error
+    }
+}
+
+// CAUTION!!!
+export const clearLocationDatabase = async () => {
+    await AsyncStorage.clear()
+}
+
+
+export const getLocationPackagesPerPage = async ( currentPage: number, itemsPerPage: number ) => {
+    let keys = [];
+    try {
+        keys = await AsyncStorage.getAllKeys() as any;
+    } catch(e) {
+        // read key error
+    }
+    const list = keys.filter((item: string)=> item.slice(0,packagePrefix.length) === packagePrefix);
+    list.reverse();
+    const size = list.length;
+    const totalPages = Math.trunc(list.length / itemsPerPage);
+    if (currentPage < 0 ) currentPage = 0;
+    if (currentPage > totalPages ) currentPage = totalPages;
+    const currentPagelist = list.slice(itemsPerPage * currentPage, itemsPerPage * currentPage + itemsPerPage);
+    return { size, itemsPerPage, currentPage, currentPagelist, totalPages }
+}
+
+export const countLocationPackages = async () => {
+    const keys = await AsyncStorage.getAllKeys() as any;
+    const count = keys.filter((item: string)=> item.slice(0,packagePrefix.length) === packagePrefix).length;
+    return count;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export const storePendingPackage = async (location: LocationObject) => {
     const power = await Battery.getPowerStateAsync();

@@ -1,24 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiGetPoints, apiSendPackage, apiReSendPackage } from "../utils/api.utils";
-
-export const sendPackage = createAsyncThunk(
-    "network/sendPackage",
-    async ( data: any, { getState } ) => {
-        const state = getState() as any;
-        const result = await apiSendPackage(data, state.network.address, state.network.timeout);
-    }
-);
-
-export const reSendPackage = createAsyncThunk(
-    "network/reSendPackage",
-    async ( data: any, { getState } ) => {
-        const state = getState() as any;
-        const result = await apiReSendPackage(data, state.network.address, state.network.timeout);
-    }
-);
-
-
 
 const restoreApiData = createAsyncThunk(
     "network/restoreApiData",
@@ -38,21 +19,33 @@ const restoreApiData = createAsyncThunk(
     }
 );
 
-const initialState = {
-    address: 'http://192.168.1.3:8081',
-    timeout: 4000,
-    //token: '',
-} as any;
+export type NetworkState = {
+    address: string,
+    timeout: number,
+    autoUpload: boolean,
+    //token: string,
 
- const networkSlice = createSlice({
+}
+
+const networkSlice = createSlice({
     name: "network",
-    initialState,
+
+    initialState: {
+        address: 'http://192.168.1.3:8081',
+        timeout: 4000,
+        autoUpload: true,
+        //token: '',
+    } as NetworkState,
+
     reducers: {
         setAPIAddress: (state, action) => {
             state.address = action.payload;
         },
         setAPITimeout: (state, action) => {
             state.timeout = action.payload;
+        },
+        setAPIAutoUpload: (state, action) => {
+            state.autoUpload = action.payload;
         },
         // setAPIToken: (state, action) => {
         //     state.timeout = action.payload;
@@ -65,5 +58,5 @@ const initialState = {
     },
 });
   
-export const { setAPIAddress, setAPITimeout } =  networkSlice.actions;
+export const { setAPIAddress, setAPITimeout, setAPIAutoUpload } =  networkSlice.actions;
 export default networkSlice.reducer;

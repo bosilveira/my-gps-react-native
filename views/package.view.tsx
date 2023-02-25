@@ -3,7 +3,7 @@ import * as React from 'react';
 import { View, SafeAreaView, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native-paper';
-import { Appbar, Divider, Button, List, ActivityIndicator, RadioButton } from 'react-native-paper';
+import { Appbar, Divider, Button, List, ActivityIndicator, RadioButton, Chip } from 'react-native-paper';
 
 // types
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -13,7 +13,6 @@ type Props = NativeStackScreenProps<RootStackParamList, 'SinglePackage'>;
 // redux
 import { AppDispatch, RootState } from '../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
-import { paginatePackagesThunk } from '../redux/database.slice';
 
 // utils
 import { getPackageById} from '../utils/asyncStorage';
@@ -30,7 +29,7 @@ export default function SinglePackageView({ route, navigation }: Props) {
     const [loading, setLoading] = React.useState(false);
     const [opacity, setOpacity] = React.useState(1);
     const [packageData, setPackageData] = React.useState({
-        id: '',
+        packageId: '',
         location: {
             coords:
             {
@@ -49,7 +48,8 @@ export default function SinglePackageView({ route, navigation }: Props) {
             batteryLevel: 0,
             batteryState: 0,
             batteryLowPowerMode: false
-        }
+        },
+        status: ''
     });
 
   const getPackage = React.useCallback(async () => {
@@ -80,62 +80,127 @@ export default function SinglePackageView({ route, navigation }: Props) {
     <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.navigate('Packages')} />
         <Appbar.Content title="Package Info" />
-        <Appbar.Action icon="broadcast" onPress={() => {}} />
+        <Appbar.Action icon="crosshairs-gps" onPress={() => {}} />
     </Appbar.Header>
 
     <ScrollView>
 
+        <Chip
+        style={{padding: 8, margin: 12}}
+        icon="information" onPress={() => console.log('Pressed')}>Total Packages: {database.size}</Chip>
+
+
+
         <List.Section
-            style={{marginVertical: 4, marginHorizontal: 16}}
+            style={{marginVertical: 16, marginHorizontal: 16}}
         >
 
-                <List.Item
-                title="Package Id"
-                description={packageData && packageData.id}
-                left={props => <List.Icon {...props} icon="tag" />}
-                />
+            <Text variant="titleMedium"
+            style={{textAlign: 'center', marginHorizontal: 12}}
+            >
+                Package Information
+            </Text>
 
-                <List.Item
-                title="Timestamp"
-                description={()=> packageData ? <Text>{millisecondsToTime(packageData.location.timestamp)}</Text> : null}
-                left={props => <List.Icon {...props} icon="update" />}
-                />
+            <List.Item
+            title="Package Id"
+            style={{marginVertical: 0}}
+            description={()=><Text variant="bodyLarge">{packageData && packageData.packageId}</Text>}
+            left={props => <List.Icon {...props} icon="tag" />}
+            />
+            
+            <List.Item
+            title="Status"
+            style={{marginVertical: 0}}
+            description={()=><Text variant="bodyLarge">{packageData && packageData.status}</Text>}
+            left={props => <List.Icon {...props} icon="sync" />}
+            />
 
-                <List.Item
-                title="Latitude"
-                description={()=> packageData ? <Text>{packageData.location.coords.latitude}</Text> : null}
-                left={props => <List.Icon {...props} icon="latitude" />}
-                />
+            <Divider style={{marginVertical: 8}} />
 
-                <List.Item
-                title="Longitude"
-                description={()=> packageData ? <Text>{packageData.location.coords.longitude}</Text> : null}
-                left={props => <List.Icon {...props} icon="longitude" />}
-                />
+            <Text variant="titleMedium"
+            style={{textAlign: 'center'}}
+            >
+                Information Sent to Server
+            </Text>
+            <Text
+            style={{textAlign: 'center', marginVertical: 4, marginHorizontal: 12}}
+            >
+                If you need to send additional information beyond 'Package Id', 'Timestamp', 'Latitude', and 'Longitude', please contact the developers directly.
+                They will be able to help you out.
+            </Text>
 
-                <List.Item
-                title="Altitude"
-                description={()=> packageData ? <Text>{packageData.location.coords.altitude}</Text> : null}
-                left={props => <List.Icon {...props} icon="altimeter" />}
-                />
+            <List.Item
+            title="Timestamp"
+            style={{marginVertical: 0}}
+            description={()=> packageData ? <Text variant="bodyLarge">{millisecondsToTime(packageData.location.timestamp)}</Text> : null}
+            left={props => <List.Icon {...props} icon="update" />}
+            />
 
-                <List.Item
-                title="Speed"
-                description={()=> packageData ? <Text>{packageData.location.coords.speed}</Text> : null}
-                left={props => <List.Icon {...props} icon="speedometer" />}
-                />
+            <List.Item
+            title="Latitude"
+            description={()=> packageData ? <Text variant="bodyLarge">{packageData.location.coords.latitude}</Text> : null}
+            left={props => <List.Icon {...props} icon="latitude" />}
+            />
 
-                <List.Item
-                title="Compass"
-                description={()=> packageData ? <Text>{packageData.location.coords.heading}</Text> : null}
-                left={props => <List.Icon {...props} icon="compass" />}
-                />
+            <List.Item
+            title="Longitude"
+            description={()=> packageData ? <Text variant="bodyLarge">{packageData.location.coords.longitude}</Text> : null}
+            left={props => <List.Icon {...props} icon="longitude" />}
+            />
 
-                <List.Item
-                title="Accuracy"
-                description={()=> packageData ? <Text>{packageData.location.coords.accuracy}</Text> : null}
-                left={props => <List.Icon {...props} icon="crosshairs-gps" />}
-                />
+            <List.Item
+            title="Speed"
+            description={()=> packageData ? <Text variant="bodyLarge">{packageData.location.coords.speed}</Text> : null}
+            left={props => <List.Icon {...props} icon="speedometer" />}
+            />
+
+            <Divider style={{marginVertical: 8}} />
+
+            <Text variant="titleMedium"
+            style={{textAlign: 'center'}}
+            >
+                Other Information
+            </Text>
+
+            <Text
+            style={{textAlign: 'center', marginVertical: 4, marginHorizontal: 12}}
+            >
+                If you're using a location tracking service, it's important to check how much battery is being used.
+                You can use the timeseries of the location tracking to verify the battery levels and see how much stress the location service is putting on your hardware.
+                This will help you ensure that the service is using the battery efficiently and that it isn't draining it too quickly.
+            </Text>
+
+            <List.Item
+            title="Battery Level"
+            description={()=> packageData ? <Text variant="bodyLarge">{(packageData.power.batteryLevel * 100).toFixed(0) + '%'}</Text> : null}
+            left={props => <List.Icon {...props} icon="battery-medium" />}
+            />
+
+            <List.Item
+            title="Battery State"
+            description={()=> packageData ? <Text variant="bodyLarge">{["Unknown", "Unplugged", "Charging", "Full"][packageData.power.batteryState]}</Text> : null}
+            left={props => <List.Icon {...props} icon="battery-charging" />}
+            />
+
+            <List.Item
+            title="Altitude"
+            description={()=> packageData ? <Text variant="bodyLarge">{packageData.location.coords.altitude}</Text> : null}
+            left={props => <List.Icon {...props} icon="altimeter" />}
+            />
+
+
+            <List.Item
+            title="Compass"
+            description={()=> packageData ? <Text variant="bodyLarge">{packageData.location.coords.heading}</Text> : null}
+            left={props => <List.Icon {...props} icon="compass" />}
+            />
+
+            <List.Item
+            title="Accuracy"
+            description={()=> packageData ? <Text variant="bodyLarge">{packageData.location.coords.accuracy}</Text> : null}
+            left={props => <List.Icon {...props} icon="crosshairs-gps" />}
+            />
+
 
         </List.Section>
 

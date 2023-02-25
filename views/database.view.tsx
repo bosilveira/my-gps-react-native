@@ -7,21 +7,22 @@ import { StatusBar } from 'expo-status-bar';
 // types
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
-type Props = NativeStackScreenProps<RootStackParamList, 'Network'>;
-import type { NetworkState } from '../redux/network.slice';
+type Props = NativeStackScreenProps<RootStackParamList, 'Database'>;
 
 // redux
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store.redux';
 import { setAPIAddress, setAPITimeout, setAPIAutoUpload } from '../redux/network.slice';
+import { setItemsPerPage } from '../redux/database.slice';
 
 // utils
 import { apiCheckConnection } from '../utils/api.utils';
 
-export default function NetworkView({ navigation }: Props) {
+export default function DatabaseView({ navigation }: Props) {
   
     // Redux
-    const network = useSelector((state: RootState) => state.network) as NetworkState;
+    const network = useSelector((state: RootState) => state.network);
+    const database = useSelector((state: RootState) => state.database);
     const dispatch = useDispatch<AppDispatch>();
 
     // API Address checking: show snackbar (bottom message) and text
@@ -51,8 +52,8 @@ export default function NetworkView({ navigation }: Props) {
 
     <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
-        <Appbar.Content title="Network (API) Settings" />
-        <Appbar.Action icon="link"/>
+        <Appbar.Content title="Database Settings" />
+        <Appbar.Action icon="database-outline"/>
     </Appbar.Header>
 
     <Snackbar
@@ -62,7 +63,7 @@ export default function NetworkView({ navigation }: Props) {
         {connectionTest}
     </Snackbar>
 
-    <ScrollView style={{backgroundColor: 'rgba(245, 245, 245, 1)'}}>
+    <ScrollView>
         <View>
             <Text variant="labelLarge" style={{textAlign: 'center', marginTop: 16}}>Automatically Upload Packages to Server</Text>
             <Text
@@ -95,24 +96,27 @@ export default function NetworkView({ navigation }: Props) {
 
         <Divider style={{marginVertical: 8}} />
 
-        <Text variant="labelLarge" style={{textAlign: 'center', marginTop: 8}}>Set API Fetching Timeout</Text>
+        <Text variant="labelLarge" style={{textAlign: 'center', marginTop: 8}}>
+            Items Per Page
+        </Text>
         <Text
         style={{textAlign: 'center', marginVertical: 4, marginHorizontal: 12}}
         >
-            Enter the API timeout in milliseconds.
+            Set the number o packages displayed per page.
         </Text>
 
         <List.Section
         style={{marginVertical: 4, marginHorizontal: 12}}
         >
             <List.Accordion
-                title={"Timeout (milliseconds): " + network.timeout.toString()}
-                left={props => <List.Icon {...props} icon="timer-outline" />}>
-                <RadioButton.Group onValueChange={value => dispatch(setAPITimeout(parseInt(value)))} value={network.timeout.toString()}>
-                <RadioButton.Item label="1000 milliseconds (1s)" value="1000" />
-                <RadioButton.Item label="2000 milliseconds (2s)" value="2000" />
-                <RadioButton.Item label="3000 milliseconds (3s)" value="3000" />
-                <RadioButton.Item label="4000 milliseconds (4s)" value="4000" />
+                title={"Items per Page: " + database.itemsPerPage.toString() + " packages"}
+                left={props => <List.Icon {...props} icon="view-list" />}>
+                <RadioButton.Group onValueChange={value => dispatch(setItemsPerPage(parseInt(value)))} value={database.itemsPerPage.toString()}>
+                <RadioButton.Item label="4 packages" value="4" />
+                <RadioButton.Item label="6 packages" value="6" />
+                <RadioButton.Item label="8 packages" value="8" />
+                <RadioButton.Item label="10 packages" value="10" />
+                <RadioButton.Item label="20 packages" value="20" />
                 </RadioButton.Group>
             </List.Accordion>
         </List.Section>

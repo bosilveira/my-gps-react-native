@@ -2,6 +2,8 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { LocationObject } from 'expo-location';
 import { checkLocationUpdates, startLocationUpdates, stopLocationUpdates, checkLocationPermissions } from "../utils/location.utils";
 
+// 1) BACKGROUND (MAIN) LOCATION TRACKING
+// 1.1) Start Background (Main) Location Tracking
 export const startLocationUpdatesThunk = createAsyncThunk(
     "location/startLocationUpdates",
     async ( args=undefined, { getState, dispatch } ) => {
@@ -17,6 +19,7 @@ export const startLocationUpdatesThunk = createAsyncThunk(
     }
 ); 
 
+// 1.2) Stop Background (Main) Location Tracking
 export const stopLocationUpdatesThunk = createAsyncThunk(
     "location/stopLocationUpdates",
     async ( args=undefined, { getState } ) => {
@@ -28,30 +31,39 @@ export const stopLocationUpdatesThunk = createAsyncThunk(
       }
   ); 
 
-const initialState = {
-    accuracy: 6,
-    deferredUpdatesInterval: 0,
-    watchPosition: false,
-    locationUpdates: false,
-    currentPosition: {
-        coords:
-        {
-            accuracy: 0,
-            altitude: 0,
-            altitudeAccuracy: 0,
-            heading: 0,
-            latitude: 0,
-            longitude: 0,
-            speed: 0
-        }, 
-        mocked: true,
-        timestamp: 0
-    } as LocationObject,
- } as any;
+
+export type LocationState = {
+    accuracy: number,
+    deferredUpdatesInterval: number,
+    status: string,
+    locationUpdates: boolean,
+    currentPosition: LocationObject,
+}
 
  const locationSlice = createSlice({
     name: "location",
-    initialState,
+    
+    initialState: { 
+        accuracy: 6,
+        deferredUpdatesInterval: 0,
+        status: 'Location Service is OFF',
+        locationUpdates: false,
+        currentPosition: {
+            coords:
+            {
+                accuracy: 0,
+                altitude: 0,
+                altitudeAccuracy: 0,
+                heading: 0,
+                latitude: 0,
+                longitude: 0,
+                speed: 0
+            }, 
+            mocked: true,
+            timestamp: 0
+        } as LocationObject
+    } as LocationState,
+
     reducers: {
 
         setAccuracy: (state, action) => {
@@ -60,10 +72,6 @@ const initialState = {
 
         setDeferredUpdatesInterval: (state, action) => {
             state.deferredUpdatesInterval = action.payload 
-        },
-
-        setWatchPosition: (state, action) => {
-            state.watchPosition = action.payload
         },
 
         setLocationUpdates: (state, action) => {
@@ -79,18 +87,30 @@ const initialState = {
 
         builder.addCase(startLocationUpdatesThunk.fulfilled, (state, action) => {
             state.locationUpdates = true;
-        });
-
-        builder.addCase(startLocationUpdatesThunk.rejected, (state, action) => {
-            state.locationUpdates = false;
+            state.status = 'Location Service is ON';
         });
 
         builder.addCase(stopLocationUpdatesThunk.fulfilled, (state, action) => {
             state.locationUpdates = false;
+            state.status = 'Location Service is OFF';
+        });
+
+        builder.addCase(startLocationUpdatesThunk.rejected, (state, action) => {
+            state.locationUpdates = false;
+            state.status = 'Could not start Location Service';
+        });
+
+        builder.addCase(startLocationUpdatesThunk.pending, (state, action) => {
+            state.status = 'Starting Location Service';
+        });
+
+
+        builder.addCase(stopLocationUpdatesThunk.pending, (state, action) => {
+            state.status = 'Aborting Location Service';
         });
 
     },
 });
   
-export const { setAccuracy, setDeferredUpdatesInterval, setWatchPosition, setLocationUpdates, setCurrentPosition  } =  locationSlice.actions;
+export const { setAccuracy, setDeferredUpdatesInterval, setLocationUpdates, setCurrentPosition  } =  locationSlice.actions;
 export default locationSlice.reducer;

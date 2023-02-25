@@ -4,17 +4,15 @@ import { ActivityIndicator, MD2Colors } from 'react-native-paper';
 import * as Battery from 'expo-battery';
 import { View, ScrollView, RefreshControl } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Appbar, Button, Card, Avatar, Text, Divider, List, RadioButton, SegmentedButtons, IconButton } from 'react-native-paper';
+import { Appbar, Button, Card, Avatar, Text, Divider, List, RadioButton, SegmentedButtons, IconButton, Chip } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 
 // redux
 import { AppDispatch, RootState } from '../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
-import { paginatePackagesThunk, deletePendingPackageThunk } from '../redux/database.slice';
 
 // utils
 import { getPackageById} from '../utils/asyncStorage';
-import { apiReSendPackage } from '../utils/api.utils';
 
 // types
 import { LocationObject } from 'expo-location';
@@ -53,10 +51,9 @@ import { millisecondsToTime } from '../utils/location.utils';
 
 interface Props {
     packageId?: string,
-    pending: boolean
 }
 
-export default function PackageCard( { packageId, pending }: Props ) {
+export default function PackageCard( { packageId }: Props ) {
 
     const locationData = useSelector((state: RootState) => state.location);
     const database = useSelector((state: RootState) => state.database);
@@ -68,7 +65,7 @@ export default function PackageCard( { packageId, pending }: Props ) {
     const [loading, setLoading] = React.useState(false);
     const [opacity, setOpacity] = React.useState(1);
     const [packageData, setPackageData] = React.useState({
-        id: '',
+        packageId: '',
         location: {
             coords:
             {
@@ -87,7 +84,8 @@ export default function PackageCard( { packageId, pending }: Props ) {
             batteryLevel: 0,
             batteryState: 0,
             batteryLowPowerMode: false
-        }
+        },
+        status: ''
     });
 
     const getPackage = React.useCallback(async () => {
@@ -110,18 +108,15 @@ export default function PackageCard( { packageId, pending }: Props ) {
     <>
 
     <Card
-    onPress={() => navigate( 'SinglePackage', {packageId: packageId}) }
-    style={{margin: 8, opacity}}
+    style={{marginVertical: 4, marginHorizontal: 8, opacity: database.loading ? 0.4 : 1}}
     >
-        <Card.Content>
-
-            <View style={{display: 'flex', flexDirection: 'row', justifyContent:'space-between', alignItems: 'center', marginBottom: 4}}>
-                <View>
-                    <Text variant="titleMedium">Package: {packageData.id}</Text>
-                    <Text variant="titleSmall">{millisecondsToTime(packageData.location.timestamp)}</Text>
-                </View>
-                { pending && <IconButton size={32} icon="sync" onPress={()=>apiReSendPackage(packageData.location, network.address, network.timeout)} /> }
-            </View>
+        <Card.Title
+            title={"Package: " + packageData.packageId}
+            subtitle={"Status: " + packageData.status}
+            left={(props) => <Avatar.Icon {...props} icon="crosshairs-gps" />}
+        />
+    
+          <Card.Content>
 
             <View style={{display: 'flex', flexDirection: 'row', justifyContent:'flex-start', alignItems: 'center', marginVertical: 2}}>
                 <Avatar.Icon size={24} icon="latitude" />
@@ -138,8 +133,21 @@ export default function PackageCard( { packageId, pending }: Props ) {
                 <Text style={{marginLeft: 8}}>Speed {packageData.location.coords.speed}</Text>
             </View>
 
+            <View style={{display: 'flex', flexDirection: 'row', justifyContent:'flex-start', alignItems: 'center', marginVertical: 2}}>
+                <Avatar.Icon size={24} icon="timer-outline" />
+                <Text style={{marginLeft: 8}}>Timestamp {millisecondsToTime(packageData.location.timestamp)}</Text>
+            </View>
         </Card.Content>
-
+        <Card.Actions>
+            <Button icon="information-outline" mode="outlined"
+            onPress={() => navigate( 'SinglePackage', {packageId: packageId}) } 
+            >
+                Info
+            </Button>
+            <Button icon="sync" mode="contained" onPress={() => console.log('Pressed')} loading={false} disabled={packageData.status !== 'pending'}>
+                Sync
+            </Button>
+    </Card.Actions>
     </Card>
     </>
     );
