@@ -8,7 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
 import type { BottomNavigationProps } from 'react-native-paper';
-type Props = NativeStackScreenProps<RootStackParamList, 'Database'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'Sync'>;
 
 // redux
 import { useSelector, useDispatch } from 'react-redux';
@@ -20,7 +20,7 @@ import { setItemsPerPage } from '../redux/database.slice';
 import PaginationSettings from '../components/database/pagination.settings';
 import SortingSettings from '../components/database/sorting.settings';
 
-export default function DatabaseView({ navigation }: Props) {
+export default function SyncView({ navigation }: Props) {
   
     // Redux
     const network = useSelector((state: RootState) => state.network);
@@ -29,10 +29,9 @@ export default function DatabaseView({ navigation }: Props) {
 
     const [ tabNavIndex, setTabNavIndex ] = React.useState(0);
     const [ routes ] = React.useState([
-        { key: 'sorting', title: 'Sorting', focusedIcon: 'sort' },
-        { key: 'pagination', title: 'Pagination', focusedIcon: 'file-table-outline' },
+        { key: 'upload', title: 'Upload', focusedIcon: 'cloud-upload-outline' },
+        { key: 'check', title: 'Verify', focusedIcon: 'check-underline' },
         { key: 'export', title: 'Export', focusedIcon: 'export' },
-        { key: 'filter', title: 'Filter', focusedIcon: 'filter' },
         { key: 'query', title: 'Query', focusedIcon: 'database-search-outline' },
     ]);
 
@@ -55,8 +54,8 @@ export default function DatabaseView({ navigation }: Props) {
 
         <Appbar.Header>
             <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
-            <Appbar.Content title="Database Settings" />
-            <Appbar.Action icon="database-outline"/>
+            <Appbar.Content title="Sync Packages" />
+            <Appbar.Action icon="sync"/>
         </Appbar.Header>
 
         <BottomNavigation

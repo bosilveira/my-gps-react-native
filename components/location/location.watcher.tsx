@@ -1,57 +1,139 @@
 // React Native, React Native Paper, and Expo components
 import * as React from 'react';
-import { ScrollView, View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { Text, Appbar, Divider, Button, List, RadioButton, BottomNavigation, Chip } from 'react-native-paper';
-import * as Battery from 'expo-battery';
-import { BatteryState } from 'expo-battery/build/Battery.types';
+import { ScrollView } from 'react-native';
+import { Text, Chip, Divider, Button, List, ActivityIndicator } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+
+// types
+import type { LocationObject } from 'expo-location';
+import type { LocationState } from '../../redux/location.slice';
+type Nav = { navigate: (value: string) => void }
 
 // redux
-import { AppDispatch, RootState } from '../../redux/store.redux';
-import { useSelector, useDispatch } from 'react-redux';
-import { setDeferredUpdatesInterval  } from '../../redux/location.slice';
+import { RootState } from '../../redux/store.redux';
+import { useSelector } from 'react-redux';
+
+// utils
+import { watchPosition, millisecondsToTime } from '../../utils/location.utils';
 
 export default function LocationWatcher() {
 
-    // Redux
-    const location = useSelector((state: RootState) => state.location);
-    const dispatch = useDispatch<AppDispatch>();
+    const { navigate } = useNavigation<Nav>()
 
-    // Tracking interval controller
-    const setDeferredUpdatesIntervalHandler = async (interval: number) => {
-        dispatch(setDeferredUpdatesInterval(interval));
-    }
+    // Redux state
+    const location = useSelector((state: RootState) => state.location) as LocationState;
+
+    // Location Watch controller
+    const [ isWatching, setIsWatching] = React.useState(false);
+    const [ position, setPosition] = React.useState(
+    {
+        coords:
+        {
+            accuracy: 0,
+            altitude: 0,
+            altitudeAccuracy: 0,
+            heading: 0,
+            latitude: 0,
+            longitude: 0,
+            speed: 0
+        }, 
+        mocked: true,
+        timestamp: 0
+    } as LocationObject);
+
+    // Activates on page loading and deactivates on exiting
+    React.useEffect(()=>{
+        if (isWatching) {
+            const watcher = watchPosition(location.accuracy, setPosition)
+            return () => {
+                watcher.then((subscription)=>subscription.remove())
+            }
+        }
+    },[isWatching])
 
     return (<>
     <ScrollView
     style={{padding: 16, backgroundColor: 'rgba(245, 245, 245, 1)'}}
     >
+
         <Text variant="titleMedium"
         style={{textAlign: 'center'}}
         >
-            Tracking Interval
+            Test Location Tracking
         </Text>
-
-        <Chip
-        style={{marginVertical: 8, padding: 8}}
-        icon="timer-outline" onPress={() => console.log('Pressed')}>{"Default Interval: " + location.deferredUpdatesInterval.toString() + "ms"}</Chip>
-
-        <RadioButton.Group onValueChange={value => setDeferredUpdatesIntervalHandler(parseInt(value))} value={location.deferredUpdatesInterval.toString()}>
-            <RadioButton.Item label="No interval (0s)" value="0" />
-            <RadioButton.Item label="1000 milliseconds (1s)" value="1000" />
-            <RadioButton.Item label="3000 milliseconds (3s)" value="3000" />
-            <RadioButton.Item label="5000 milliseconds (5s)" value="5000" />
-            <RadioButton.Item label="10000 milliseconds (10s)" value="10000" />
-        </RadioButton.Group>
-
-        <Divider style={{marginVertical: 8}} />
 
         <Text
         style={{textAlign: 'center'}}
         >
-            Deferred Updates Interval. Minimum time interval in milliseconds that must pass since last reported location before all later locations are reported in a batched update.
+            Please utilize this service to verify location data. Values that are displayed are not stored in the database; please use the home page for this purpose.
         </Text>
 
+        <Divider style={{marginVertical: 8}} />
+
+        <Button
+        icon={isWatching ? ()=><ActivityIndicator animating={isWatching} color={'white'}/> : "radar"}
+        mode="contained"
+        onPress={() => setIsWatching(previous=>!previous)}
+        style={{marginVertical: 8, marginHorizontal: 32}}
+        >
+        Watch Position
+        </Button>
+
+        <Chip
+        style={{marginVertical: 8, padding: 8}}
+        icon={ isWatching ? "map-marker-radius-outline" : "map-marker-off-outline"}>
+            {isWatching ? "Tracking Current Position" : "Press 'Watch Position' to Start"}
+        </Chip>
+
+        <List.Section
+            style={{marginVertical: 4, marginHorizontal: 16}}
+        >
+    
+            <List.Item
+            title="Last Update"
+            description={()=> isWatching ? <Text>{millisecondsToTime(position.timestamp)}</Text> : null}
+            left={props => <List.Icon {...props} icon="update" />}
+            />
+
+            <List.Item
+            title="Latitude"
+            description={()=> isWatching ? <Text>{position.coords.latitude}</Text> : null}
+            left={props => <List.Icon {...props} icon="latitude" />}
+            />
+
+            <List.Item
+            title="Longitude"
+            description={()=> isWatching ? <Text>{position.coords.longitude}</Text> : null}
+            left={props => <List.Icon {...props} icon="longitude" />}
+            />
+
+            <List.Item
+            title="Altitude"
+            description={()=> isWatching ? <Text>{position.coords.altitude}</Text> : null}
+            left={props => <List.Icon {...props} icon="altimeter" />}
+            />
+
+            <List.Item
+            title="Speed"
+            description={()=> isWatching ? <Text>{position.coords.speed}</Text> : null}
+            left={props => <List.Icon {...props} icon="speedometer" />}
+            />
+
+            <List.Item
+            title="Compass"
+            description={()=> isWatching ? <Text>{position.coords.heading}</Text> : null}
+            left={props => <List.Icon {...props} icon="compass" />}
+            />
+
+            <List.Item
+            title="Accuracy"
+            description={()=> isWatching ? <Text>{position.coords.accuracy}</Text> : null}
+            left={props => <List.Icon {...props} icon="crosshairs-gps" />}
+            />
+
+        </List.Section>
+
     </ScrollView>
+
     </>);
 }

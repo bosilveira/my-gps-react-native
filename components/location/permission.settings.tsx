@@ -1,24 +1,12 @@
 // React Native, React Native Paper, and Expo components
 import * as React from 'react';
-import { ScrollView, View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { Text, Appbar, Divider, Button, List, RadioButton, BottomNavigation, Chip } from 'react-native-paper';
-import * as Battery from 'expo-battery';
-import { BatteryState } from 'expo-battery/build/Battery.types';
-
-// redux
-import { AppDispatch, RootState } from '../../redux/store.redux';
-import { useSelector, useDispatch } from 'react-redux';
-import { setAccuracy, setDeferredUpdatesInterval } from '../../redux/location.slice';
+import { ScrollView } from 'react-native';
+import { Text, Divider, Button, List, Chip } from 'react-native-paper';
 
 // utils
-import { getLocationPermission, requestLocationPermission, watchPosition } from '../../utils/location.utils';
+import { getLocationPermission, requestLocationPermission } from '../../utils/location.utils';
 
 export default function PermissionSettings() {
-
-    // Redux
-    const location = useSelector((state: RootState) => state.location);
-    const dispatch = useDispatch<AppDispatch>();
 
     // Check Location Permissions
     const [locationPermission, setLocationPermission] = React.useState({

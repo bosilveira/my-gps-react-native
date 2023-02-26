@@ -48,6 +48,12 @@ export type DatabaseState = {
     totalPages: number,
     currentPage: number,
     currentPageList: any[],
+    sorting: string,
+    query: {
+        applied: false,
+        start: number,
+        end: number
+    }
     loading: boolean
 }
 
@@ -60,6 +66,12 @@ const databaseSlice = createSlice({
         totalPages: 0,
         currentPage: 0,
         currentPageList: [],
+        sorting: 'ASC',
+        query: {
+            applied: false,
+            start: 0,
+            end: 0,
+        },
         loading: false
     },
 

@@ -1,20 +1,20 @@
 // React Native, React Native Paper, and Expo components
 import * as React from 'react';
-import { ScrollView, View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { Text, Appbar, Divider, Button, List, RadioButton, BottomNavigation, Chip } from 'react-native-paper';
-import * as Battery from 'expo-battery';
-import { BatteryState } from 'expo-battery/build/Battery.types';
+import { ScrollView } from 'react-native';
+import { Text, Divider, RadioButton, Chip } from 'react-native-paper';
 
 // redux
 import { AppDispatch, RootState } from '../../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
 import { setAccuracy  } from '../../redux/location.slice';
 
+//types
+import type { LocationState } from '../../redux/location.slice';
+
 export default function AccuracySettings() {
 
     // Redux
-    const location = useSelector((state: RootState) => state.location);
+    const location = useSelector((state: RootState) => state.location) as LocationState;
     const dispatch = useDispatch<AppDispatch>();
 
     // Accuracy controller

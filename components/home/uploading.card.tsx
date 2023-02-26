@@ -1,29 +1,20 @@
 // React Native, React Native Paper, and Expo components
 import * as React from 'react';
 import { View, ScrollView } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { Switch, Appbar, Button, Card, Avatar, Text, Divider, List, ProgressBar, ToggleButton, Modal, Portal, Provider, ActivityIndicator, BottomNavigation, Chip } from 'react-native-paper';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Button, Card, Avatar, Text, Divider, Chip, ToggleButton } from 'react-native-paper';
 
 import { useNavigation } from '@react-navigation/native';
 
-import HomeMenu from './home.menu';
 // redux
 import { AppDispatch, RootState } from '../../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
-import { startLocationUpdatesThunk, stopLocationUpdatesThunk, setDeferredUpdatesInterval } from '../../redux/location.slice';
 import { setAPIAutoUpload } from '../../redux/network.slice';
 
 // types
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../App';
+import type { LocationState } from '../../redux/location.slice';
+import type { NetworkState } from '../../redux/network.slice';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
-
-type Nav = {
-    navigate: (value: string) => void;
-}
+type Nav = { navigate: (value: string) => void }
 
 export default function UploadingCard() {
   
@@ -31,13 +22,11 @@ export default function UploadingCard() {
 
     // Redux
     const dispatch = useDispatch<AppDispatch>();
-    const location = useSelector((state: RootState) => state.location);
-    const network = useSelector((state: RootState) => state.network);
-
-    // BACKGROUND (MAIN) LOCATION TRACKING
+    const location = useSelector((state: RootState) => state.location) as LocationState;
+    const network = useSelector((state: RootState) => state.network) as NetworkState;
 
     // Switch component controller: Activate Location Tracking
-    const [switchAutoUploadOn, setSwitchAutoUploadOn] = React.useState(false);
+    const [switchAutoUploadOn, setSwitchAutoUploadOn] = React.useState(network.autoUpload);
     const onToggleSwitchAutoUpload = () => {
         if (network.autoUpload) {
             dispatch(setAPIAutoUpload(false));
@@ -45,15 +34,6 @@ export default function UploadingCard() {
         } else {
             dispatch(setAPIAutoUpload(true));
             setSwitchAutoUploadOn(true);
-        }
-    }
-
-    // Time interval toggle controller
-    const setDeferredUpdatesIntervalHandler = async (interval: number) => {
-        if (isNaN(interval)) {
-            dispatch(setDeferredUpdatesInterval(0));
-        } else {
-            dispatch(setDeferredUpdatesInterval(interval));
         }
     }
 
@@ -65,7 +45,13 @@ export default function UploadingCard() {
             <Card.Title
             title="Package Uploading"
             subtitle="Network (Server API) Service"
-            right={() => <Switch value={network.autoUpload} onValueChange={onToggleSwitchAutoUpload}/>}
+            right={() => <ToggleButton
+                icon="upload"
+                value="bluetooth"
+                style={{marginRight: 8, borderColor: 'rgba(224, 224, 224, 1)', borderWidth: 1.5}}
+                status={switchAutoUploadOn ? "checked" : "unchecked"}
+                onPress={onToggleSwitchAutoUpload}
+              />}
             left={(props) => <Avatar.Icon {...props} icon="cloud-upload" />}
             />
 
@@ -81,11 +67,6 @@ export default function UploadingCard() {
                 <View>
                     <Text variant="labelLarge" style={{textAlign: 'center', width: '100%', marginTop: 4}}>API Address</Text>
                     <Text style={{textAlign: 'center', width: '100%', marginTop: 4}}>{network.address}</Text>
-                    <Text variant="labelLarge" style={{textAlign: 'center', width: '100%', marginTop: 4}}>
-                        {network.autoUpload ?
-                            "Uploading will start automatically" :
-                            "Uploading is set to manual"}
-                    </Text>
                     <Button icon="cloud-upload" mode="outlined" onPress={() => navigate('Network')}
                     style={{marginVertical: 16, marginHorizontal: 32}} >Check Upload Settings</Button>
                 </View>
@@ -102,11 +83,6 @@ export default function UploadingCard() {
             <Text variant="labelLarge" style={{textAlign: 'center', padding: 8}}>
                 All location packages are saved into the database. If there is a fetch error, you can sync packages later.
             </Text>
-
-
-            <Button icon="database-outline" mode="contained" onPress={() => navigate('Packages')}
-            loading={location.locationUpdates} disabled={location.locationUpdates}
-            style={{marginVertical: 16, marginHorizontal: 32}} >Check Package Database</Button>
 
         </Card>
     </ScrollView>

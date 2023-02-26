@@ -15,15 +15,14 @@ import SecurityPage from './views/security';
 import PackagesView from './views/packages.view';
 import SinglePackageView from './views/package.view';
 import DatabaseView from './views/database.view';
-
-import { NavigatorScreenParams } from '@react-navigation/native';
-
+import SyncView from './views/sync.view';
 
 export type RootStackParamList = {
     Home: undefined,
     Packages: undefined,
     SinglePackage: { packageId: string },
     Database: undefined,
+    Sync: undefined,
     Location: undefined,
     Watch: undefined,
     Network: undefined,
@@ -50,6 +49,7 @@ export default function App() {
                 <Stack.Screen name="Packages" component={PackagesView} options={{ headerShown: false }}/>
                 <Stack.Screen name="SinglePackage" component={SinglePackageView} options={{ headerShown: false }}/>
                 <Stack.Screen name="Database" component={DatabaseView} options={{ headerShown: false }}/>
+                <Stack.Screen name="Sync" component={SyncView} options={{ headerShown: false }}/>
                 <Stack.Screen name="Location" component={LocationView} options={{ headerShown: false }}/>
                 <Stack.Screen name="Watch" component={WatchView} options={{ headerShown: false }}/>
                 <Stack.Screen name="Network" component={NetworkView} options={{ headerShown: false }}/>

@@ -1,29 +1,19 @@
 // React Native, React Native Paper, and Expo components
 import * as React from 'react';
 import { View, ScrollView } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { Switch, Appbar, Button, Card, Avatar, Text, Divider, List, ProgressBar, ToggleButton, Modal, Portal, Provider, ActivityIndicator, BottomNavigation, Chip } from 'react-native-paper';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-
+import { Switch, Button, Card, Avatar, Text, Divider, ToggleButton, Chip } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 
-import HomeMenu from './home.menu';
 // redux
 import { AppDispatch, RootState } from '../../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
 import { startLocationUpdatesThunk, stopLocationUpdatesThunk, setDeferredUpdatesInterval } from '../../redux/location.slice';
-import { setAPIAutoUpload } from '../../redux/network.slice';
 
 // types
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../App';
+import type { LocationState } from '../../redux/location.slice';
+import type { DatabaseState } from '../../redux/database.slice';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
-
-type Nav = {
-    navigate: (value: string) => void;
-}
+type Nav = { navigate: (value: string) => void }
 
 export default function TrackingCard() {
   
@@ -31,10 +21,8 @@ export default function TrackingCard() {
 
     // Redux
     const dispatch = useDispatch<AppDispatch>();
-    const location = useSelector((state: RootState) => state.location);
-    const database = useSelector((state: RootState) => state.database);
-
-    // BACKGROUND (MAIN) LOCATION TRACKING
+    const location = useSelector((state: RootState) => state.location) as LocationState;
+    const database = useSelector((state: RootState) => state.database) as DatabaseState;
 
     // Switch component controller: Activate Location Tracking
     const [switchLocationOn, setSwitchLocationOn] = React.useState(false);
@@ -65,7 +53,7 @@ export default function TrackingCard() {
             <Card.Title
             title="Location Tracking"
             subtitle="Location (GPS) Service"
-            right={() => <Switch value={switchLocationOn} onValueChange={()=>onToggleSwitchLocation()}/>}
+            right={() => <Switch value={switchLocationOn} onValueChange={()=>onToggleSwitchLocation()} style={{marginRight: 8}} />}
             left={(props) => <Avatar.Icon {...props} icon="car-connected"/>}
             />
 
@@ -107,7 +95,7 @@ export default function TrackingCard() {
 
             <Button icon="database-outline" mode="contained" onPress={() => navigate('Packages')}
             loading={location.locationUpdates} disabled={location.locationUpdates}
-            style={{marginVertical: 16, marginHorizontal: 32}} >Check Package Database</Button>
+            style={{marginVertical: 16, marginHorizontal: 32}} >Check Package List</Button>
 
         </Card>
     </ScrollView>
