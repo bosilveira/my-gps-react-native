@@ -1,134 +1,133 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { LocationObject } from 'expo-location';
-import { storePackage, clearStorage, storePendingPackage, storeSentPackage, deletePackage, deletePendingPackage, countPendingPackages,
-    countSentPackages, getPackagesPerPage, getPackagesPerPageAndType } from "../utils/asyncStorage";
+import { countLocationPackages, getLocationPackagesPerPage, clearStorage } from "../utils/asyncStorage";
 
-// save package as PENDING
-export const savePendingPackageThunk = createAsyncThunk(
-    "database/savePendingPackage",
-    async ( location: LocationObject ) => {
-        await storePendingPackage(location);
+// types
+import type { DatabaseState } from "../types/databaseState.type";
+import { DatabaseSorting } from "../types/databaseState.type";
+
+// Count total database package entries
+export const countLocationPackagesThunk = createAsyncThunk(
+    "database/countLocationPackages",
+    async (): Promise<number> => {
+        const size = await countLocationPackages();
+        return size;
     }
 );
 
-// save package as SENT
-export const saveSentPackageThunk = createAsyncThunk(
-    "database/storeSentPackage",
-    async ( location: LocationObject ) => {
-        await storeSentPackage(location);
-    }
-);
-
-// delete package by ID
-export const deletePackageThunk = createAsyncThunk(
-    "database/deletePackage",
-    async ( packageId: string ) => {
-        await deletePackage(packageId);
-    }
-);
-
-// count database package entries; return packages (total), pending, and sent
-export const countDatabasePackagesThunk = createAsyncThunk(
-    "database/countDatabasePackages",
-    async ( ) => {
-        const pending = await countPendingPackages();
-        const sent = await countSentPackages();
-        return { packages: pending + sent, pending, sent };
+// Get packages per page
+export const paginateLocationPackagesThunk = createAsyncThunk(
+    "database/paginateLocationPackages",
+    async (page: number, { getState } ) => {
+        const state = getState() as any;
+        const { size, currentPage, currentPagelist, totalPages } = await getLocationPackagesPerPage(page, state.database.itemsPerPage);
+        return { size, currentPage, currentPagelist, totalPages };
     }
 );
 
 // get packages per page
-export const paginatePackagesThunk = createAsyncThunk(
-    "database/getPackagesPerPage",
-    async ( args: any ) => {
-        const { page, type } = args;
-        const { list, totalPages, packages } = await getPackagesPerPageAndType(page, type);
-        return { list, totalPages, packages, page, type };
+export const reloadLocationPackagesThunk = createAsyncThunk(
+    "database/reloadLocationPackages",
+    async ( args=undefined, { getState } ) => {
+        const state = getState() as any;
+        const { size, itemsPerPage, currentPage, currentPagelist, totalPages } = await getLocationPackagesPerPage(state.database.currentPage, state.database.itemsPerPage);
+        return { size, itemsPerPage, currentPage, currentPagelist, totalPages };
     }
 );
 
 // delete all database entries
 export const clearDatabaseThunk = createAsyncThunk(
     "database/clearDatabase",
-    async ( ) => {
+    async () => {
         clearStorage();
         return 0;
     }
 );
 
-// delete pending package
-export const deletePendingPackageThunk = createAsyncThunk(
-    "database/clearDatabase",
-    async ( location: LocationObject) => {
-        await deletePendingPackage(location);
-    }
-);
-
-
-const initialState = {
-    packages: 0,
-    pending: 0,
-    sent: 0,
-    totalPages: 0,
-    page: 0,
-    pageList: [],
-    type: '@PEND',
-    loading: false
-} as any;
-
 const databaseSlice = createSlice({
     name: "database",
-    initialState,
+
+    initialState: {
+        size: 0,
+        itemsPerPage: 8,
+        totalPages: 0,
+        currentPage: 0,
+        currentPageList: [],
+        sorting: DatabaseSorting.ASC,
+        loading: false
+    } as DatabaseState,
+
     reducers: {
 
-        setType: (state, action) => {
-            state.type = action.payload 
+        setItemsPerPage: (state, action) => {
+            state.itemsPerPage = action.payload 
         },
 
-        setPackages: (state, action) => {
-            state.packages = action.payload 
+        setSortingASC: (state) => {
+            state.sorting = DatabaseSorting.ASC;
         },
 
-        addPackages: (state, action) => {
-            state.packages = state.packages + action.payload 
+        setSortingDESC: (state) => {
+            state.sorting = DatabaseSorting.DESC;
+        },
+
+        incrementSize: (state) => {
+            state.size += 1;
+        },
+
+        setCurrentPage: (state, action) => {
+            if (action.payload < 0) {
+                state.currentPage = 0;
+            } else if (action.payload > state.totalPages) {
+                state.currentPage = state.totalPages;
+            } else {
+                state.currentPage = action.payload;
+            }
         },
 
     },
     extraReducers: (builder) => {
 
-        builder.addCase(savePendingPackageThunk.fulfilled, (state, action) => {
-            state.packages = state.packages + 1;
-            state.pending = state.pending + 1;
+        builder.addCase(countLocationPackagesThunk.pending, (state, action) => {
+            state.loading = true;
         });
 
-        builder.addCase(saveSentPackageThunk.fulfilled, (state, action) => {
-            state.packages = state.packages + 1;
-            state.sent = state.sent + 1;
+        builder.addCase(countLocationPackagesThunk.fulfilled, (state, action) => {
+            state.size = action.payload;
+            state.loading = false;
         });
 
-        builder.addCase(countDatabasePackagesThunk.fulfilled, (state, action) => {
-            state.packages = action.payload.packages;
-            state.pending = action.payload.pending;
-            state.sent = action.payload.sent;
+        builder.addCase(paginateLocationPackagesThunk.pending, (state, action) => {
+            state.loading = true;
         });
 
-        builder.addCase(paginatePackagesThunk.fulfilled, (state, action) => {
+        builder.addCase(paginateLocationPackagesThunk.fulfilled, (state, action) => {
+            state.size = action.payload.size;
+            state.currentPage = action.payload.currentPage;
+            state.currentPageList = action.payload.currentPagelist;
             state.totalPages = action.payload.totalPages;
-            state.pageList = action.payload.list;
-            state.packages = action.payload.packages;
-            state.page = action.payload.page;
-            state.type = action.payload.type;
+            state.loading = false;
         });
+
+        builder.addCase(reloadLocationPackagesThunk.pending, (state, action) => {
+            state.loading = true;
+        });
+
+        builder.addCase(reloadLocationPackagesThunk.fulfilled, (state, action) => {
+            state.size = action.payload.size;
+            state.currentPage = action.payload.currentPage;
+            state.currentPageList = action.payload.currentPagelist;
+            state.totalPages = action.payload.totalPages;
+            state.loading = false;
+        });
+
 
 
         builder.addCase(clearDatabaseThunk.fulfilled, (state, action) => {
-            state.packages = 0;
-            state.pending = 0;
-            state.sent = 0;
+            state.size = 0;
         });
 
     },
 });
   
-export const { setType, setPackages, addPackages } =  databaseSlice.actions;
+export const { setItemsPerPage, setSortingASC, setSortingDESC, incrementSize, setCurrentPage } =  databaseSlice.actions;
 export default databaseSlice.reducer;
