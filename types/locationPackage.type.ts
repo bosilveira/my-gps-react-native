@@ -1,5 +1,10 @@
 import * as Battery from 'expo-battery';
 
+export enum LocationPackageStatus {
+    PEND = "Pending",
+    SENT = "Sent"
+}
+
 export type LocationPackage = {
     id: string,
     location: {
@@ -21,5 +26,5 @@ export type LocationPackage = {
         batteryState: Battery.BatteryState,
         lowPowerMode: boolean,
     },
-    status: string
+    status: LocationPackageStatus
 };

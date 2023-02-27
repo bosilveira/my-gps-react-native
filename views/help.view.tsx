@@ -11,7 +11,8 @@ import type { RootStackParamList } from '../App';
 type Props = NativeStackScreenProps<RootStackParamList, 'Help'>;
 
 export default function HelpPage({ navigation }: Props) {
-  return (<>
+
+return (<>
 
     <StatusBar 
     animated={true}
@@ -22,22 +23,22 @@ export default function HelpPage({ navigation }: Props) {
     <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
         <Appbar.Content title="Help" />
-        <Appbar.Action icon="help-circle-outline" onPress={() => {}} />
+        <Appbar.Action icon="help-circle-outline" />
     </Appbar.Header>
 
     <ScrollView style={{backgroundColor: 'rgba(245, 245, 245, 1)'}}>
         <Text variant="titleMedium"
-            style={{textAlign: 'center', marginHorizontal: 12}}
-            >
-                Location Tracking Accuracy
-            </Text>
-            <Text
-            style={{textAlign: 'center', marginVertical: 4, marginHorizontal: 12}}
-            >
-                GPS accuracy options range from accurate to the nearest three kilometers (Lowest) to the highest possible accuracy that uses additional sensor data
-                to facilitate navigation apps (Best For Navigation). In between, accuracy gets progressively better, ranging from accurate to the nearest kilometer
-                (Low) to within ten meters of the desired target (High) to the best level of accuracy available (Highest).
-            </Text>
+        style={{textAlign: 'center', marginHorizontal: 12}}
+        >
+            Location Tracking Accuracy
+        </Text>
+        <Text
+        style={{textAlign: 'center', marginVertical: 4, marginHorizontal: 12}}
+        >
+            GPS accuracy options range from accurate to the nearest three kilometers (Lowest) to the highest possible accuracy that uses additional sensor data
+            to facilitate navigation apps (Best For Navigation). In between, accuracy gets progressively better, ranging from accurate to the nearest kilometer
+            (Low) to within ten meters of the desired target (High) to the best level of accuracy available (Highest).
+        </Text>
     </ScrollView>
 
     </>);

@@ -12,10 +12,7 @@ import LocationView from './views/location.view';
 import WatchView from './views/watch.view';
 import NetworkView from './views/network.view';
 import SecurityPage from './views/security';
-import PackagesView from './views/packages.view';
 import SinglePackageView from './views/package.view';
-import DatabaseView from './views/database.view';
-import SyncView from './views/sync.view';
 
 export type RootStackParamList = {
     Home: undefined,
@@ -46,10 +43,7 @@ export default function App() {
         <NavigationContainer>
             <Stack.Navigator initialRouteName="Home">
                 <Stack.Screen name="Home" component={HomePage} options={{ headerShown: false }}/>
-                <Stack.Screen name="Packages" component={PackagesView} options={{ headerShown: false }}/>
                 <Stack.Screen name="SinglePackage" component={SinglePackageView} options={{ headerShown: false }}/>
-                <Stack.Screen name="Database" component={DatabaseView} options={{ headerShown: false }}/>
-                <Stack.Screen name="Sync" component={SyncView} options={{ headerShown: false }}/>
                 <Stack.Screen name="Location" component={LocationView} options={{ headerShown: false }}/>
                 <Stack.Screen name="Watch" component={WatchView} options={{ headerShown: false }}/>
                 <Stack.Screen name="Network" component={NetworkView} options={{ headerShown: false }}/>

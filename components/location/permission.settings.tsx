@@ -39,19 +39,19 @@ export default function PermissionSettings() {
 
         <Chip
         style={{marginVertical: 8, padding: 8}}
-        icon="arrange-bring-forward" onPress={() => console.log('Pressed')}>
+        icon="arrange-bring-forward">
             {(locationPermission.foregroundPermissionGranted) ? "Foreground Services ALLOWED" : "Foreground NOT ALLOWED!"}
         </Chip>
 
         <Chip
         style={{marginVertical: 8, padding: 8}}
-        icon="arrange-send-backward" onPress={() => console.log('Pressed')}>
+        icon="arrange-send-backward">
             {(locationPermission.backgroundPermissionGranted) ? "Background Services ALLOWED" : "Background Services NOT ALLOWED!"}
         </Chip>
 
         <Chip
         style={{marginVertical: 8, padding: 8}}
-        icon="progress-question" onPress={() => console.log('Pressed')}>
+        icon="progress-question">
             {(locationPermission.foregroundPermissionCanAskAgain && locationPermission.backgroundPermissionCanAskAgain) ? "May ask again? ALLOWED" : "Check Device Settings!"}
         </Chip>
 

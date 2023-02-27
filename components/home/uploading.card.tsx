@@ -1,24 +1,19 @@
 // React Native, React Native Paper, and Expo components
 import * as React from 'react';
-import { View, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import { Button, Card, Avatar, Text, Divider, Chip, ToggleButton } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 
 // redux
 import { AppDispatch, RootState } from '../../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
-import { setAPIAutoUpload } from '../../redux/network.slice';
+import { setAPIAutoUpload, checkConnectionThunk } from '../../redux/network.slice';
 
 // types
 import type { LocationState } from '../../types/locationState.type';
 import type { NetworkState } from '../../types/networkState.type';
 import type { DatabaseState } from '../../types/databaseState.type';
-
-import * as Network from 'expo-network';
 type Nav = { navigate: (value: string) => void }
-
-// utils
-import { checkNetworkConnection } from '../../utils/api.utils';
 
 export default function UploadingCard() {
   
@@ -30,35 +25,12 @@ export default function UploadingCard() {
     const network = useSelector((state: RootState) => state.network) as NetworkState;
     const database = useSelector((state: RootState) => state.database) as DatabaseState;
 
-    // Switch component controller: Activate Location Tracking
-    const [switchAutoUploadOn, setSwitchAutoUploadOn] = React.useState(network.autoUpload);
-    const onToggleSwitchAutoUpload = () => {
-        if (network.autoUpload) {
-            dispatch(setAPIAutoUpload(false));
-            setSwitchAutoUploadOn(false);
-        } else {
-            dispatch(setAPIAutoUpload(true));
-            setSwitchAutoUploadOn(true);
-        }
-    }
-
-    const [ networkConnection, setNetworkConnection ] = React.useState({ 
-        type: Network.NetworkStateType.UNKNOWN,
-        isConnected: false,
-        isInternetReachable: false
-    } as Network.NetworkState);
-
-
     React.useEffect(()=>{
-        (async ()=>{
-            const connection = await checkNetworkConnection();
-            setNetworkConnection(connection);
-            if (!networkConnection.isConnected || !networkConnection.isInternetReachable ) {
-                dispatch(setAPIAutoUpload(false));
-            }
-        })();
-
-    },[network.autoUpload])
+        dispatch(checkConnectionThunk());
+        if (!network.connection.isConnected || !network.connection.isInternetReachable ) {
+            dispatch(setAPIAutoUpload(false));
+        }
+    },[])
 
     return (<>
     <ScrollView style={{backgroundColor: 'rgba(245, 245, 245, 1)'}}>
@@ -73,48 +45,59 @@ export default function UploadingCard() {
                 icon={network.autoUpload ? "upload" : "upload-off"}
                 value="upload"
                 style={{marginRight: 16, borderColor: 'rgba(224, 224, 224, 1)', borderWidth: 1.5}}
-                status={switchAutoUploadOn ? "checked" : "unchecked"}
-                onPress={onToggleSwitchAutoUpload}
+                status={network.autoUpload ? "checked" : "unchecked"}
+                onPress={()=>dispatch(setAPIAutoUpload(!network.autoUpload))}
               />}
             left={(props) => <Avatar.Icon {...props} icon="cloud-upload" />}
             />
 
             <Card.Content>
+
                 <Chip
+                mode="outlined"
                 style={{ padding: 8}}
                 icon="progress-upload">
                     {network.autoUpload ? "Uploading is ON" : "Uploading is OFF"}
                 </Chip>
-                <Button icon="cloud-upload" mode="outlined" onPress={() => navigate('Network')}
+
+                <Button
+                disabled={network.autoUpload && location.locationUpdates}
+                icon="cloud-upload" mode="outlined" onPress={() => navigate('Network')}
                 style={{margin: 8}} >Network Settings</Button>
+                
             </Card.Content>
 
-            <Divider style={{marginVertical: 8}} />
+            <Divider style={{marginVertical: 8}} bold={true}/>
 
             <Card.Title
             title="Package Syncing"
-            subtitle={"Sync " + database.size + " Offline Packages"}
-            right={() => <ToggleButton
-                icon={network.autoUpload ? "sync" : "sync-off"}
-                value="sync"
-                style={{marginRight: 16, borderColor: 'rgba(224, 224, 224, 1)', borderWidth: 1.5}}
-                status={switchAutoUploadOn ? "checked" : "unchecked"}
-                onPress={onToggleSwitchAutoUpload}
-              />}
+            subtitle="Sync Offline Packages"
             left={(props) => <Avatar.Icon {...props} icon="progress-upload" />}
             />
 
             <Card.Content>
                 <Chip
                 style={{ padding: 8}}
-                icon={networkConnection.isConnected ? "check-network-outline" : "close-network-outline"} 
-                onPress={() => console.log('Pressed')}>
-                    {networkConnection.isConnected && networkConnection.isInternetReachable ? networkConnection.type?.toString() + " is connected" : "Server is not reachable"}
+                icon={network.connection.isConnected ? "check-network-outline" : "close-network-outline"} 
+                >
+                    {network.connection.isConnected && network.connection.isInternetReachable ? 
+                        network.connection.type?.toString() + " is connected" : "Server is not reachable"}
                 </Chip>
+
+                <Button icon="sync" mode="contained" onPress={() => navigate('Packages')}
+                loading={location.locationUpdates} disabled={(network.autoUpload && location.locationUpdates) || database.size === 0}
+                style={{margin: 8}} >Start Syncing Packages</Button>
 
             </Card.Content>
 
         </Card>
+
+        <Divider style={{marginVertical: 8}} horizontalInset={true}/>
+
+        <Text style={{textAlign: 'center', padding: 8}}>
+            All location packages are saved into the database. If there is a fetch error, you can sync packages later.
+        </Text>
+
     </ScrollView>
     </>);
 }

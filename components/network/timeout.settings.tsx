@@ -34,7 +34,7 @@ export default function TimeoutSettings() {
 
         <Chip
         style={{marginVertical: 8, padding: 8}}
-        icon="timer-sand" onPress={() => console.log('Pressed')}>
+        icon="timer-sand">
             {"Default Timeout: " + network.timeout.toString() + " milliseconds"}
         </Chip>
 

@@ -5,9 +5,6 @@ export enum DatabaseSorting {
     DESC = "Descending"
 }
 
-
-
-
 export type DatabaseState = {
     size: number,
     itemsPerPage: number,

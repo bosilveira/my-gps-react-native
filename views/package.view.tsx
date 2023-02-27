@@ -8,6 +8,9 @@ import { Appbar, Divider, Button, List, ActivityIndicator, RadioButton, Chip } f
 // types
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
+import type { LocationPackage } from '../types/locationPackage.type';
+import { LocationPackageStatus } from '../types/locationPackage.type';
+import * as Battery from 'expo-battery';
 type Props = NativeStackScreenProps<RootStackParamList, 'SinglePackage'>;
 
 // redux
@@ -15,7 +18,7 @@ import { AppDispatch, RootState } from '../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
 
 // utils
-import { getPackageById} from '../utils/asyncStorage';
+import { getLocationPackage } from '../utils/asyncStorage';
 import { millisecondsToTime } from '../utils/location.utils';
 
 export default function SinglePackageView({ route, navigation }: Props) {
@@ -29,7 +32,7 @@ export default function SinglePackageView({ route, navigation }: Props) {
     const [loading, setLoading] = React.useState(false);
     const [opacity, setOpacity] = React.useState(1);
     const [packageData, setPackageData] = React.useState({
-        packageId: '',
+        id: '',
         location: {
             coords:
             {
@@ -46,17 +49,17 @@ export default function SinglePackageView({ route, navigation }: Props) {
         },
         power: {
             batteryLevel: 0,
-            batteryState: 0,
-            batteryLowPowerMode: false
+            batteryState: Battery.BatteryState.UNKNOWN,
+            lowPowerMode: false,
         },
-        status: ''
-    });
+        status: LocationPackageStatus.PEND
+    } as LocationPackage);
 
   const getPackage = React.useCallback(async () => {
       setLoading(true);
       setOpacity(.4)
       if (packageId) {
-          const packageInfo = await getPackageById(packageId);
+          const packageInfo = await getLocationPackage(packageId);
           setPackageData(packageInfo)
       }
       setLoading(false);
@@ -78,55 +81,30 @@ export default function SinglePackageView({ route, navigation }: Props) {
     />
     
     <Appbar.Header>
-        <Appbar.BackAction onPress={() => navigation.navigate('Packages')} />
+        <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
         <Appbar.Content title="Package Info" />
-        <Appbar.Action icon="crosshairs-gps" onPress={() => {}} />
+        <Appbar.Action icon="crosshairs-gps"/>
     </Appbar.Header>
 
     <ScrollView>
-
+        {loading && <ActivityIndicator size={32} animating={true} style={{marginTop: 32}}/>} 
+        {!loading && 
+        <>
         <Chip
-        style={{padding: 8, margin: 12}}
-        icon="information" onPress={() => console.log('Pressed')}>Total Packages: {database.size}
+        style={{padding: 8}}
+        icon="information">Package: {packageData.id}
         </Chip>
 
         <List.Section
-            style={{marginVertical: 16, marginHorizontal: 16}}
+        style={{marginVertical: 16, marginHorizontal: 16}}
         >
 
-            <Text variant="titleMedium"
-            style={{textAlign: 'center', marginHorizontal: 12}}
-            >
-                Package Information
-            </Text>
-
-            <List.Item
-            title="Package Id"
-            style={{marginVertical: 0}}
-            description={()=><Text variant="bodyLarge">{packageData && packageData.packageId}</Text>}
-            left={props => <List.Icon {...props} icon="tag" />}
-            />
-            
             <List.Item
             title="Status"
             style={{marginVertical: 0}}
-            description={()=><Text variant="bodyLarge">{packageData && packageData.status}</Text>}
+            description={()=><Text variant="bodyLarge">{packageData.status}</Text>}
             left={props => <List.Icon {...props} icon="sync" />}
             />
-
-            <Divider style={{marginVertical: 8}} />
-
-            <Text variant="titleMedium"
-            style={{textAlign: 'center'}}
-            >
-                Information Sent to Server
-            </Text>
-            <Text
-            style={{textAlign: 'center', marginVertical: 4, marginHorizontal: 12}}
-            >
-                If you need to send additional information beyond 'Package Id', 'Timestamp', 'Latitude', and 'Longitude', please contact the developers directly.
-                They will be able to help you out.
-            </Text>
 
             <List.Item
             title="Timestamp"
@@ -153,21 +131,23 @@ export default function SinglePackageView({ route, navigation }: Props) {
             left={props => <List.Icon {...props} icon="speedometer" />}
             />
 
-            <Divider style={{marginVertical: 8}} />
+            <List.Item
+            title="Accuracy"
+            description={()=> packageData ? <Text variant="bodyLarge">{packageData.location.coords.accuracy}</Text> : null}
+            left={props => <List.Icon {...props} icon="crosshairs-gps" />}
+            />
 
-            <Text variant="titleMedium"
-            style={{textAlign: 'center'}}
-            >
-                Other Information
-            </Text>
+            <List.Item
+            title="Altitude"
+            description={()=> packageData ? <Text variant="bodyLarge">{packageData.location.coords.altitude}</Text> : null}
+            left={props => <List.Icon {...props} icon="altimeter" />}
+            />
 
-            <Text
-            style={{textAlign: 'center', marginVertical: 4, marginHorizontal: 12}}
-            >
-                If you're using a location tracking service, it's important to check how much battery is being used.
-                You can use the timeseries of the location tracking to verify the battery levels and see how much stress the location service is putting on your hardware.
-                This will help you ensure that the service is using the battery efficiently and that it isn't draining it too quickly.
-            </Text>
+            <List.Item
+            title="Compass"
+            description={()=> packageData ? <Text variant="bodyLarge">{packageData.location.coords.heading}</Text> : null}
+            left={props => <List.Icon {...props} icon="compass" />}
+            />
 
             <List.Item
             title="Battery Level"
@@ -181,27 +161,19 @@ export default function SinglePackageView({ route, navigation }: Props) {
             left={props => <List.Icon {...props} icon="battery-charging" />}
             />
 
-            <List.Item
-            title="Altitude"
-            description={()=> packageData ? <Text variant="bodyLarge">{packageData.location.coords.altitude}</Text> : null}
-            left={props => <List.Icon {...props} icon="altimeter" />}
-            />
-
-
-            <List.Item
-            title="Compass"
-            description={()=> packageData ? <Text variant="bodyLarge">{packageData.location.coords.heading}</Text> : null}
-            left={props => <List.Icon {...props} icon="compass" />}
-            />
-
-            <List.Item
-            title="Accuracy"
-            description={()=> packageData ? <Text variant="bodyLarge">{packageData.location.coords.accuracy}</Text> : null}
-            left={props => <List.Icon {...props} icon="crosshairs-gps" />}
-            />
-
-
         </List.Section>
+
+        <Divider style={{marginVertical: 8}} horizontalInset={true}/>
+
+        <Text
+        style={{textAlign: 'center', marginVertical: 8, marginHorizontal: 12}}
+        >
+            If you're using a location tracking service, it's important to check how much battery is being used.
+            You can use the timeseries of the location tracking to verify the battery levels and see how much stress the location service is putting on your hardware.
+            This will help you ensure that the service is using the battery efficiently and that it isn't draining it too quickly.
+        </Text>
+
+        </>}
 
     </ScrollView>
 

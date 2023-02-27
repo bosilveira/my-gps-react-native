@@ -5,7 +5,7 @@ import { countLocationPackages, getLocationPackagesPerPage, clearStorage } from 
 import type { DatabaseState } from "../types/databaseState.type";
 import { DatabaseSorting } from "../types/databaseState.type";
 
-// count database package entries; return packages (total), pending, and sent
+// Count total database package entries
 export const countLocationPackagesThunk = createAsyncThunk(
     "database/countLocationPackages",
     async (): Promise<number> => {
@@ -14,13 +14,13 @@ export const countLocationPackagesThunk = createAsyncThunk(
     }
 );
 
-// get packages per page
+// Get packages per page
 export const paginateLocationPackagesThunk = createAsyncThunk(
     "database/paginateLocationPackages",
-    async (args: any) => {
-        const { page, itemsPerPage } = args;
-        const { size, currentPage, currentPagelist, totalPages } = await getLocationPackagesPerPage(page, itemsPerPage);
-        return { size, itemsPerPage, currentPage, currentPagelist, totalPages };
+    async (page: number, { getState } ) => {
+        const state = getState() as any;
+        const { size, currentPage, currentPagelist, totalPages } = await getLocationPackagesPerPage(page, state.database.itemsPerPage);
+        return { size, currentPage, currentPagelist, totalPages };
     }
 );
 
@@ -62,10 +62,6 @@ const databaseSlice = createSlice({
             state.itemsPerPage = action.payload 
         },
 
-        setSorting: (state, action) => {
-            state.sorting = action.payload.sorting;
-        },
-
         setSortingASC: (state) => {
             state.sorting = DatabaseSorting.ASC;
         },
@@ -74,6 +70,19 @@ const databaseSlice = createSlice({
             state.sorting = DatabaseSorting.DESC;
         },
 
+        incrementSize: (state) => {
+            state.size += 1;
+        },
+
+        setCurrentPage: (state, action) => {
+            if (action.payload < 0) {
+                state.currentPage = 0;
+            } else if (action.payload > state.totalPages) {
+                state.currentPage = state.totalPages;
+            } else {
+                state.currentPage = action.payload;
+            }
+        },
 
     },
     extraReducers: (builder) => {
@@ -93,7 +102,6 @@ const databaseSlice = createSlice({
 
         builder.addCase(paginateLocationPackagesThunk.fulfilled, (state, action) => {
             state.size = action.payload.size;
-            state.itemsPerPage = action.payload.itemsPerPage;
             state.currentPage = action.payload.currentPage;
             state.currentPageList = action.payload.currentPagelist;
             state.totalPages = action.payload.totalPages;
@@ -106,7 +114,6 @@ const databaseSlice = createSlice({
 
         builder.addCase(reloadLocationPackagesThunk.fulfilled, (state, action) => {
             state.size = action.payload.size;
-            state.itemsPerPage = action.payload.itemsPerPage;
             state.currentPage = action.payload.currentPage;
             state.currentPageList = action.payload.currentPagelist;
             state.totalPages = action.payload.totalPages;
@@ -122,5 +129,5 @@ const databaseSlice = createSlice({
     },
 });
   
-export const { setItemsPerPage, setSortingASC, setSortingDESC, setSorting } =  databaseSlice.actions;
+export const { setItemsPerPage, setSortingASC, setSortingDESC, incrementSize, setCurrentPage } =  databaseSlice.actions;
 export default databaseSlice.reducer;

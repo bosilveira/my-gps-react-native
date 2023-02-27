@@ -5,6 +5,7 @@ import * as Device from 'expo-device';
 
 // types
 import type { LocationPackage } from '../types/locationPackage.type';
+import { LocationPackageStatus } from '../types/locationPackage.type';
 import { LocationObject } from 'expo-location';
 
 // Location Package Database Entry Prefix
@@ -13,7 +14,7 @@ const packagePrefix = "@_";
 // Save Location Package Entry into Database (AsyncStorage)
 export const saveLocationPackage = async (id: string, location: LocationObject) => {
     const power = await Battery.getPowerStateAsync();
-    const status = 'pending';
+    const status = LocationPackageStatus.PEND;
     const item = { id, location, power, status };
     const jsonValue = JSON.stringify(item);
     await AsyncStorage.setItem(packagePrefix + id, jsonValue);
@@ -52,7 +53,16 @@ export const getLocationPackagesPerPage = async (currentPage: number, itemsPerPa
     if (currentPage < 0 ) currentPage = 0;
     if (currentPage > totalPages ) currentPage = totalPages;
     const currentPagelist = list.slice(itemsPerPage * currentPage, itemsPerPage * currentPage + itemsPerPage);
-    return { size, itemsPerPage, currentPage, currentPagelist, totalPages }
+
+    const values = await AsyncStorage.multiGet(currentPagelist);
+
+    const locationPackages: LocationPackage[] = []
+    values.forEach( async (item, index)=> {
+        const data = JSON.parse(item[1] as string);
+        locationPackages.push(data);
+    })
+  
+    return { size, itemsPerPage, currentPage, currentPagelist: locationPackages, totalPages }
 }
 
 export const countLocationPackages = async () => {
@@ -71,10 +81,7 @@ export const getMultiple = async () => {
         const data = JSON.parse(item[1] as string);
         locationPackages.push(data);
     })
-  
     return locationPackages;
-    // example console.log output:
-    // [ ['@MyApp_user', 'myUserValue'], ['@MyApp_key', 'myKeyValue'] ]
   }
 
 
@@ -88,10 +95,7 @@ export const getMultiple = async () => {
         const data = JSON.parse(item[1] as string);
         locationPackages.push(data);
     })
-  
     return locationPackages;
-    // example console.log output:
-    // [ ['@MyApp_user', 'myUserValue'], ['@MyApp_key', 'myKeyValue'] ]
   }
 
 

@@ -13,10 +13,10 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Network'>;
 import AddressSettings from '../components/network/address.settings';
 import AutoUploadSettings from '../components/network/autoUpload.settings';
 import TimeoutSettings from '../components/network/timeout.settings';
-import ReiterationSettings from '../components/network/reiteration.settings';
 
 export default function NetworkView({ navigation }: Props) {
   
+    // Bottom Navigation controller
     const [ tabNavIndex, setTabNavIndex ] = React.useState(1);
     const [ routes ] = React.useState([
         { key: 'test', title: 'Test', focusedIcon: 'access-point' },

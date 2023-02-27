@@ -90,7 +90,6 @@ export default function DisclaimerPage({ navigation }: Props) {
         }
     }
 
-
     return (<>
 
     <StatusBar 
@@ -113,7 +112,6 @@ export default function DisclaimerPage({ navigation }: Props) {
     renderScene={renderScene}
     renderIcon={(route)=><Text>{route.route.key}</Text>}
     />
-
 
     </>);
 }

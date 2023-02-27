@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setAccuracy  } from '../../redux/location.slice';
 
 //types
-import type { LocationState } from '../../redux/location.slice';
+import type { LocationState } from '../../types/locationState.type';
 
 export default function AccuracySettings() {
 
@@ -34,7 +34,7 @@ export default function AccuracySettings() {
 
         <Chip
         style={{marginVertical: 8, padding: 8}}
-        icon="crosshairs-gps" onPress={() => console.log('Pressed')}>
+        icon="crosshairs-gps">
             Accuracy: {["Lowest", "Low", "Balanced", "High", "Highest", "Best for Navigation"][location.accuracy - 1]}
         </Chip>
 

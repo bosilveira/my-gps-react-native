@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setDeferredUpdatesInterval  } from '../../redux/location.slice';
 
 //types
-import type { LocationState } from '../../redux/location.slice';
+import type { LocationState } from '../../types/locationState.type';
 
 export default function IntervalSettings() {
 
@@ -34,7 +34,7 @@ export default function IntervalSettings() {
 
         <Chip
         style={{marginVertical: 8, padding: 8}}
-        icon="timer-outline" onPress={() => console.log('Pressed')}>{"Default Interval: " + location.deferredUpdatesInterval.toString() + "ms"}</Chip>
+        icon="timer-outline">{"Default Interval: " + location.deferredUpdatesInterval.toString() + "ms"}</Chip>
 
         <RadioButton.Group onValueChange={value => setDeferredUpdatesIntervalHandler(parseInt(value))} value={location.deferredUpdatesInterval.toString()}>
             <RadioButton.Item label="No interval (0s)" value="0" />

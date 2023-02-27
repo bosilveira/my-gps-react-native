@@ -17,28 +17,30 @@ import LocationWatcher from '../components/location/location.watcher';
 
 export default function LocationView({ navigation }: Props) {
 
-    const [ tabNavIndex, setTabNavIndex ] = React.useState(1);
+    // Bottom Navigation controller
+    const [ tabNavIndex, setTabNavIndex ] = React.useState(0);
     const [ routes ] = React.useState([
-        { key: 'test', title: 'Test', focusedIcon: 'radar' },
         { key: 'accuracy', title: 'Accuracy', focusedIcon: 'crosshairs-gps' },
         { key: 'interval', title: 'Interval', focusedIcon: 'timer-outline' },
         { key: 'permission', title: 'Permission', focusedIcon: 'incognito' },
+        { key: 'test', title: 'Test', focusedIcon: 'radar' },
     ]);
   
     const renderScene: BottomNavigationProps["renderScene"] = ({ route }) => {
         switch (route.key) {
-            case 'test':
-                return <LocationWatcher/>;
             case 'accuracy':
                 return <AccuracySettings/>;
             case 'interval':
                 return <IntervalSettings />;
             case 'permission':
                 return <PermissionSettings />;
-        }
+            case 'test':
+                return <>{tabNavIndex == 3 && <LocationWatcher/>}</>;
+            }
     }
 
     return (<>
+
     <StatusBar 
     animated={true}
     translucent={true}
@@ -48,7 +50,7 @@ export default function LocationView({ navigation }: Props) {
     <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
         <Appbar.Content title="Location Settings" />
-        <Appbar.Action icon="car-connected" onPress={() => {}} />
+        <Appbar.Action icon="car-connected"/>
     </Appbar.Header>
 
     <BottomNavigation

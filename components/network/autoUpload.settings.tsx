@@ -35,7 +35,7 @@ export default function AutoUploadSettings() {
 
         <Chip
         style={{marginVertical: 8, padding: 8}}
-        icon="progress-upload" onPress={() => console.log('Pressed')}>
+        icon="progress-upload">
             Auto Upload is {network.autoUpload ? "ON" : "OFF"}
         </Chip>
 

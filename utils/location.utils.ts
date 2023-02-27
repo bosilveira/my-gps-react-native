@@ -15,8 +15,9 @@ import type { MapData } from '../types/mapData.type';
 import { store } from '../redux/store.redux';
 import { setCurrentPosition } from '../redux/location.slice';
 import { saveLocationPackage, countLocationPackages } from './asyncStorage';
-import { countLocationPackagesThunk, reloadLocationPackagesThunk } from '../redux/database.slice';
+import { countLocationPackagesThunk, reloadLocationPackagesThunk, incrementSize } from '../redux/database.slice';
 import { GyroscopeSensor } from 'expo-sensors/build/Gyroscope';
+
 
 // 1) LOCATION PERMISSIONS
 
@@ -58,6 +59,7 @@ export const requestLocationPermission = async () => {
 //     return last;
 // }
 
+
 // 2) FOREGROUND TRACKING
 
 // 2.1) Get foreground location (current position)
@@ -66,8 +68,19 @@ export const getCurrentPosition = async (accuracy: number = 6) => {
     return current;
 }
 
-// 2.2) Start foreground location tracking
-export const watchPosition = async (accuracy: number, getPosition: Dispatch<React.SetStateAction<LocationObject>>): Promise<Location.LocationSubscription> => {
+// 2.2) Get and store foreground location (current position)
+export const getAndStoreCurrentPosition = async (accuracy: number = 6) => {
+    const timer = new Promise((resolve, reject) => {setTimeout(()=> { resolve(false) }, 10000)});
+    const current = await Promise.race( [Location.getCurrentPositionAsync({ accuracy }), timer] ) as any;
+    if (!current) {
+        throw Error('timer')
+    }
+    await saveLocationPackage(current.timestamp.toString(), current);
+    await store.dispatch(countLocationPackagesThunk());
+}
+
+// 2.3) Start foreground location tracking
+export const watchPosition = async (accuracy: number = 6, getPosition: Dispatch<React.SetStateAction<LocationObject>>): Promise<Location.LocationSubscription> => {
     const subscription = await Location.watchPositionAsync({ accuracy },
         (location)=>{
             getPosition(location);
@@ -76,14 +89,13 @@ export const watchPosition = async (accuracy: number, getPosition: Dispatch<Reac
     return subscription;
 }
 
+
 // 3) BACKGROUND TRACKING (MAIN)
 
 const locationTaskName = "MY_GPS_LOCATION";
 
 // 3.1) Start background location tracking
 export const startLocationUpdates = async (accuracy: number = 6, deferredUpdatesInterval: number = 0) => {
-    const count = await countLocationPackages();
-    //setPackages(count);
     const task = await Location.startLocationUpdatesAsync(locationTaskName, { accuracy, deferredUpdatesInterval });
     TaskManager.defineTask(locationTaskName, ({ data, error }) => {
         if (error) {
@@ -92,33 +104,35 @@ export const startLocationUpdates = async (accuracy: number = 6, deferredUpdates
         if (data) {
             const { locations } = data as any;
             (async()=>{
-                await saveLocationPackage(locations[0].timestamp, locations[0]);
-                await store.dispatch(countLocationPackagesThunk());
+                await saveLocationPackage(locations[0].timestamp.toString(), locations[0]);
+                store.dispatch(incrementSize());
             })()
         }
     });
 }
 
-// 3.2) check if background location tracking is active and return boolean
+// 3.2) Check if background location tracking is active and return boolean
 export const checkLocationUpdates = async (): Promise<boolean> => {
     const check = await Location.hasStartedLocationUpdatesAsync(locationTaskName);
     return check;
 }
 
-// 3.3) stop background location tracking
+// 3.3) Stop background location tracking
 export const stopLocationUpdates = async () => {
     await Location.stopLocationUpdatesAsync(locationTaskName);
-    await store.dispatch(reloadLocationPackagesThunk());
+    await store.dispatch(countLocationPackagesThunk());
 }
 
-// 4) convert milliseconds to date
+// 4) Utils
+
+// 4.1 Convert milliseconds to date
 export const millisecondsToTime = (ms: number): string => {
     let date = new Date();
     date.setTime(ms);
     return date.toTimeString() 
 }
 
-
+// 4.2 Reverse Geocode
 export const reverseGeocode = async (location: LocationObject) => {
     const result = await Location.reverseGeocodeAsync({ latitude: location.coords.latitude, longitude: location.coords.longitude });
     return result;

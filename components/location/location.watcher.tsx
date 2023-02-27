@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 
 // types
 import type { LocationObject } from 'expo-location';
-import type { LocationState } from '../../redux/location.slice';
+import type { LocationState } from '../../types/locationState.type';
 type Nav = { navigate: (value: string) => void }
 
 // redux
@@ -17,8 +17,6 @@ import { useSelector } from 'react-redux';
 import { watchPosition, millisecondsToTime } from '../../utils/location.utils';
 
 export default function LocationWatcher() {
-
-    const { navigate } = useNavigation<Nav>()
 
     // Redux state
     const location = useSelector((state: RootState) => state.location) as LocationState;

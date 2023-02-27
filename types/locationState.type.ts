@@ -5,6 +5,9 @@ export enum LocationStateStatus {
     ABORTING = "Aborting Location Service",
     ON = "Location Service is ON",
     OFF = "Location Service is OFF",
+    GETTING = "Storing Current Position",
+    GETTING_SUCCESS = "Success: Current Position Stored",
+    GETTING_ERROR = "Timeout: Call Current Position Again",
     ERROR = "Location Service Error; Check Settings."
 }
 

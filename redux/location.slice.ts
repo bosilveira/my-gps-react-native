@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { checkLocationUpdates, startLocationUpdates, stopLocationUpdates, checkLocationPermissions } from "../utils/location.utils";
+import { checkLocationUpdates, startLocationUpdates, stopLocationUpdates, checkLocationPermissions, getAndStoreCurrentPosition } from "../utils/location.utils";
 
 // types
 import type { LocationState } from "../types/locationState.type";
@@ -31,7 +31,20 @@ export const stopLocationUpdatesThunk = createAsyncThunk(
             await stopLocationUpdates()
         }
       }
-  ); 
+); 
+
+// 2) FOREGROUND LOCATION TRACKING
+export const getAndStoreCurrentPositionThunk = createAsyncThunk(
+    "location/getAndStoreCurrentPosition",
+    async ( args = undefined, { getState, dispatch } ) => {
+        const permissions = await checkLocationPermissions()
+        if (!permissions) {
+            throw Error('permissions')
+        }
+        const state = getState() as any;
+        await getAndStoreCurrentPosition(state.location.accuracy);
+    }
+); 
 
 const locationSlice = createSlice({
     name: "location",
@@ -78,6 +91,21 @@ const locationSlice = createSlice({
     },
     extraReducers: (builder) => {
 
+        builder.addCase(getAndStoreCurrentPositionThunk.pending, (state, action) => {
+            state.locationUpdates = true;
+            state.status = LocationStateStatus.GETTING;
+        });
+
+        builder.addCase(getAndStoreCurrentPositionThunk.fulfilled, (state, action) => {
+            state.locationUpdates = false;
+            state.status = LocationStateStatus.GETTING_SUCCESS;
+        });
+
+        builder.addCase(getAndStoreCurrentPositionThunk.rejected, (state, action) => {
+            state.locationUpdates = false;
+            state.status = LocationStateStatus.GETTING_ERROR;
+        });
+
         builder.addCase(startLocationUpdatesThunk.fulfilled, (state, action) => {
             state.locationUpdates = true;
             state.status = LocationStateStatus.ON;
@@ -104,5 +132,5 @@ const locationSlice = createSlice({
     },
 });
   
-export const { setAccuracy, setDeferredUpdatesInterval, setLocationUpdates, setCurrentPosition  } =  locationSlice.actions;
+export const { setAccuracy, setDeferredUpdatesInterval, setLocationUpdates, setCurrentPosition } =  locationSlice.actions;
 export default locationSlice.reducer;
