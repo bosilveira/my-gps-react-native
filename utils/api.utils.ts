@@ -1,8 +1,14 @@
 // React Native, Axios, and Expo components
 import axios, {isCancel, AxiosError} from 'axios';
 import { store } from '../redux/store.redux';
-import { LocationObject } from 'expo-location';
+import type { LocationObject } from 'expo-location';
+import * as Network from 'expo-network';
 import { updateLocationPackageStatus, deleteLocationPackage } from './asyncStorage';
+
+export const checkNetworkConnection = async (): Promise<Network.NetworkState> => {
+    const networkConnection = await Network.getNetworkStateAsync();
+    return networkConnection;
+}
 
 // Send Location Package Info to Server
 export const apiSendPackage = async (location: LocationObject, packageId: string, address: string, timeout: number = 0, removeAfterSend: boolean = false) => {

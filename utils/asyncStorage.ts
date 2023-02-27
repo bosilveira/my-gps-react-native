@@ -4,6 +4,29 @@ import * as Battery from 'expo-battery';
 import * as Device from 'expo-device';
 import { LocationObject } from 'expo-location';
 
+export interface Package {
+    packageId: string,
+    location: {
+        coords:
+        {
+            accuracy: number,
+            altitude: number,
+            altitudeAccuracy: number,
+            heading: number,
+            latitude: number,
+            longitude: number,
+            speed: number
+        }, 
+        mocked: boolean,
+        timestamp: number
+    },
+    power: {
+        batteryLevel: number,
+        batteryState: Battery.BatteryState,
+        lowPowerMode: boolean,
+    },
+    status: string
+} 
 
 // Location Package Database Entry Prefix
 const packagePrefix = "@_";
@@ -79,7 +102,38 @@ export const countLocationPackages = async () => {
     return count;
 }
 
+export const getMultiple = async () => {
+    const keys = await AsyncStorage.getAllKeys() as any;
+    const list = keys.filter((item: string)=> item.slice(0,packagePrefix.length) === packagePrefix);
+    const values = await AsyncStorage.multiGet(list);
 
+    const locationPackages: Package[] = []
+    values.forEach( async (item, index)=> {
+        const data = JSON.parse(item[1] as string);
+        locationPackages.push(data);
+    })
+  
+    return locationPackages;
+    // example console.log output:
+    // [ ['@MyApp_user', 'myUserValue'], ['@MyApp_key', 'myKeyValue'] ]
+  }
+
+
+  export const getAllLocationPackages = async () => {
+    const keys = await AsyncStorage.getAllKeys() as any;
+    const list = keys.filter((item: string)=> item.slice(0,packagePrefix.length) === packagePrefix);
+    const values = await AsyncStorage.multiGet(list);
+
+    const locationPackages: Package[] = []
+    values.forEach( async (item, index)=> {
+        const data = JSON.parse(item[1] as string);
+        locationPackages.push(data);
+    })
+  
+    return locationPackages;
+    // example console.log output:
+    // [ ['@MyApp_user', 'myUserValue'], ['@MyApp_key', 'myKeyValue'] ]
+  }
 
 
 

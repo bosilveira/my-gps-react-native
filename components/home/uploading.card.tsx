@@ -2,7 +2,6 @@
 import * as React from 'react';
 import { View, ScrollView } from 'react-native';
 import { Button, Card, Avatar, Text, Divider, Chip, ToggleButton } from 'react-native-paper';
-
 import { useNavigation } from '@react-navigation/native';
 
 // redux
@@ -13,8 +12,11 @@ import { setAPIAutoUpload } from '../../redux/network.slice';
 // types
 import type { LocationState } from '../../redux/location.slice';
 import type { NetworkState } from '../../redux/network.slice';
-
+import * as Network from 'expo-network';
 type Nav = { navigate: (value: string) => void }
+
+// utils
+import { checkNetworkConnection } from '../../utils/api.utils';
 
 export default function UploadingCard() {
   
@@ -37,6 +39,24 @@ export default function UploadingCard() {
         }
     }
 
+    const [ networkConnection, setNetworkConnection ] = React.useState({ 
+        type: Network.NetworkStateType.UNKNOWN,
+        isConnected: false,
+        isInternetReachable: false
+    } as Network.NetworkState);
+
+
+    React.useEffect(()=>{
+        (async ()=>{
+            const connection = await checkNetworkConnection();
+            setNetworkConnection(connection);
+            if (!networkConnection.isConnected || !networkConnection.isInternetReachable ) {
+                dispatch(setAPIAutoUpload(false));
+            }
+        })();
+
+    },[network.autoUpload])
+
     return (<>
     <ScrollView style={{backgroundColor: 'rgba(245, 245, 245, 1)'}}>
         <Card
@@ -46,8 +66,8 @@ export default function UploadingCard() {
             title="Package Uploading"
             subtitle="Network (Server API) Service"
             right={() => <ToggleButton
-                icon="upload"
-                value="bluetooth"
+                icon={network.autoUpload ? "upload" : "upload-off"}
+                value="upload"
                 style={{marginRight: 8, borderColor: 'rgba(224, 224, 224, 1)', borderWidth: 1.5}}
                 status={switchAutoUploadOn ? "checked" : "unchecked"}
                 onPress={onToggleSwitchAutoUpload}
@@ -57,7 +77,7 @@ export default function UploadingCard() {
 
             <Chip
             style={{margin: 8, padding: 8}}
-            icon={network.autoUpload ? "check-network-outline" : "close-network-outline"} onPress={() => console.log('Pressed')}>
+            icon="progress-upload">
                 {network.autoUpload ? "Auto Uploading is ON" : "Auto Uploading is OFF"}
             </Chip>
 
@@ -76,8 +96,9 @@ export default function UploadingCard() {
 
             <Chip
             style={{margin: 8, padding: 8}}
-            icon="cloud-alert" onPress={() => console.log('Pressed')}>
-                API Fetch Error
+            icon={networkConnection.isConnected ? "check-network-outline" : "close-network-outline"} 
+            onPress={() => console.log('Pressed')}>
+                {networkConnection.isConnected && networkConnection.isInternetReachable ? networkConnection.type?.toString() + " is connected" : "Server is not reachable"}
             </Chip>
 
             <Text variant="labelLarge" style={{textAlign: 'center', padding: 8}}>

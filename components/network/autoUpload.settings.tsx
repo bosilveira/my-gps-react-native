@@ -35,7 +35,7 @@ export default function AutoUploadSettings() {
 
         <Chip
         style={{marginVertical: 8, padding: 8}}
-        icon="timer-sand" onPress={() => console.log('Pressed')}>
+        icon="progress-upload" onPress={() => console.log('Pressed')}>
             Auto Upload is {network.autoUpload ? "ON" : "OFF"}
         </Chip>
 
@@ -43,7 +43,7 @@ export default function AutoUploadSettings() {
                 <Text variant="bodyLarge" >Toggle Auto Upload</Text>
                 <ToggleButton
                 icon="upload"
-                value="bluetooth"
+                value="upload"
                 style={{marginLeft: 8, borderColor: 'rgba(192, 192, 192, 1)', borderWidth: 1}}
                 status={network.autoUpload ? "checked" : "unchecked"}
                 onPress={()=>{dispatch(setAPIAutoUpload(!network.autoUpload))}}

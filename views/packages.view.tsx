@@ -22,6 +22,7 @@ import { startLocationUpdatesThunk, stopLocationUpdatesThunk } from '../redux/lo
 
 // components
 import PackageCard from '../components/packageCard';
+import MapCard from '../components/packages/map.card';
 
 export default function PackagesView({ navigation }: Props) {
 
@@ -59,12 +60,12 @@ export default function PackagesView({ navigation }: Props) {
     const [endDateTime, setEndDate] = React.useState(new Date());
 
 
-    const [ tabNavIndex, setTabNavIndex ] = React.useState(1);
+    const [ tabNavIndex, setTabNavIndex ] = React.useState(2);
     const [ routes ] = React.useState([
         { key: 'list', title: 'List', focusedIcon: 'list-status' },
         { key: 'filter', title: 'Filter', focusedIcon: 'filter' },
-        { key: 'export', title: 'Export', focusedIcon: 'export' },
-        { key: 'database', title: 'Database', focusedIcon: 'database-outline' },
+        { key: 'map', title: 'Map', focusedIcon: 'map' },
+        { key: 'sync', title: 'Sync', focusedIcon: 'sync' },
     ]);
 
     const renderScene: BottomNavigationProps["renderScene"] = ({ route }) => {
@@ -108,8 +109,8 @@ export default function PackagesView({ navigation }: Props) {
                     </View>
                 </ScrollView>
                 </>;
-            case 'uploading':
-                return <></>;
+            case 'map':
+                return <MapCard />;
         }
     }
 
