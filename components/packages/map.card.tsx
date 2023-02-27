@@ -11,16 +11,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import { startLocationUpdatesThunk, stopLocationUpdatesThunk, setDeferredUpdatesInterval } from '../../redux/location.slice';
 
 // types
-import type { LocationState } from '../../redux/location.slice';
-import type { DatabaseState } from '../../redux/database.slice';
+import type { LocationState } from '../../types/locationState.type';
+import type { DatabaseState } from '../../types/databaseState.type';
 import type { LocationObject } from 'expo-location';
-import type { GyroscopeMeasurement } from 'expo-sensors';
-import { GyroscopeSensor } from 'expo-sensors/build/Gyroscope';
 
 type Nav = { navigate: (value: string) => void }
-
-import { getMultiple } from '../../utils/asyncStorage';
-import { getCurrentPosition, reverseGeocode, watchGyroscope } from '../../utils/location.utils';
 
 import { watchPosition, millisecondsToTime, getMap } from '../../utils/location.utils';
 
@@ -110,20 +105,21 @@ export default function MapCard() {
             <Card.Title
             title="Location Packages Map"
             subtitle="Coordinates and Accuracy Plot"
-            left={(props) => <Avatar.Icon {...props} icon="map"/>}
+            left={(props) => <Avatar.Icon {...props} icon="vector-square"/>}
             />
+            
+            <Card.Content>
 
             <Chip
-            style={{margin: 8, padding: 8}}
+            style={{ padding: 8}}
             icon="target-variant"
             >
                 {database.size} Points to Plot
             </Chip>
-            
-            <Card.Content>
-            <Button icon="draw" mode="contained" onPress={plotMap}
+
+            <Button icon="vector-line" mode="contained" onPress={plotMap}
             loading={location.locationUpdates} disabled={location.locationUpdates}
-            style={{marginVertical: 8, marginHorizontal: 32}} >Plot Location Packages</Button>
+            style={{margin: 8}} >Plot Location Packages</Button>
             </Card.Content>
 
         </Card>

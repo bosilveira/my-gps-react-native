@@ -1,9 +1,11 @@
 // React Native, Axios, and Expo components
 import axios, {isCancel, AxiosError} from 'axios';
 import { store } from '../redux/store.redux';
-import type { LocationObject } from 'expo-location';
 import * as Network from 'expo-network';
 import { updateLocationPackageStatus, deleteLocationPackage } from './asyncStorage';
+
+// types
+import type { LocationObject } from 'expo-location';
 
 export const checkNetworkConnection = async (): Promise<Network.NetworkState> => {
     const networkConnection = await Network.getNetworkStateAsync();
@@ -11,14 +13,14 @@ export const checkNetworkConnection = async (): Promise<Network.NetworkState> =>
 }
 
 // Send Location Package Info to Server
-export const apiSendPackage = async (location: LocationObject, packageId: string, address: string, timeout: number = 0, removeAfterSend: boolean = false) => {
+export const apiSendPackage = async (location: LocationObject, id: string, address: string, timeout: number = 0, removeAfterSend: boolean = false): Promise<boolean> => {
     const result = await axios({
         method: 'post',
-        url: '/points/' + packageId,
+        url: '/points/' + id,
         baseURL: address,
         timeout,
         data: {
-            id: packageId,
+            id,
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
             speed: location.coords.speed,
@@ -28,9 +30,9 @@ export const apiSendPackage = async (location: LocationObject, packageId: string
     .then((response) => {
         if (response.status === 201) {
             if (removeAfterSend) {
-                deleteLocationPackage(packageId);
+                deleteLocationPackage(id);
             } else {
-                updateLocationPackageStatus(packageId, 'sent')
+                updateLocationPackageStatus(id, 'sent')
             }
             return true;
         } else {
@@ -45,7 +47,7 @@ export const apiSendPackage = async (location: LocationObject, packageId: string
 }
 
 // Perform GET and Check Response Status (200)
-export const apiCheckConnection = async (address: string, timeout: number) => {
+export const apiCheckConnection = async (address: string, timeout: number): Promise<boolean> => {
     const result = await axios({
         method: 'get',
         url: '/points/',

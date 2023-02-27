@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { View } from 'react-native';
-import { Menu, Divider, Appbar, Text } from 'react-native-paper';
+import { Menu, Divider, Appbar, Text, IconButton } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 
 type Nav = { navigate: (value: string) => void }
 
-const HomeMenu = () => {
+const PackagesMenu = () => {
 
     const { navigate } = useNavigation<Nav>()
 
@@ -23,23 +23,23 @@ const HomeMenu = () => {
         visible={visible}
         onDismiss={closeMenu}
         anchorPosition="bottom"
-        anchor={<Appbar.Action icon="menu" onPress={openMenu} />}>
-            <Text variant="titleMedium" style={{textAlign: 'center', marginTop: 8}} >Settings</Text>
-            <Menu.Item leadingIcon="car-connected" onPress={() => navigate('Location')} title="Location Settings"
+        anchor={<IconButton icon="sort"onPress={openMenu} />}>
+            <Text variant="titleMedium" style={{textAlign: 'center', marginTop: 8}} >Sorting</Text>
+            <Menu.Item leadingIcon="sort-clock-ascending-outline" onPress={() => navigate('Packages')} title="Ascending"
             style={{paddingHorizontal: 24}}
             />
-            <Menu.Item leadingIcon="cloud-upload-outline" onPress={() => navigate('Network')} title="Network Settings"
+            <Menu.Item leadingIcon="sort-clock-descending-outline" onPress={() => navigate('Sync')} title="Descending"
             style={{paddingHorizontal: 24}}
             />
             <Divider />
-            <Text variant="titleMedium" style={{textAlign: 'center', marginTop: 8}} >Info</Text>
-            <Menu.Item leadingIcon="information-outline" onPress={() => navigate('Disclaimer')} title="Disclaimer"
+            <Text variant="titleMedium" style={{textAlign: 'center', marginTop: 8}} >Items per Page</Text>
+            <Menu.Item leadingIcon="file-outline" onPress={() => navigate('Database')} title="8 Items"
             style={{paddingHorizontal: 24}}
             />
-            <Menu.Item leadingIcon="security" onPress={() => navigate('Security')} title="Security"
+            <Menu.Item leadingIcon="file-outline" onPress={() => navigate('Location')} title="16 Items"
             style={{paddingHorizontal: 24}}
             />
-            <Menu.Item leadingIcon="help-circle-outline" onPress={() => navigate('Help')} title="Help"
+            <Menu.Item leadingIcon="file-outline" onPress={() => navigate('Location')} title="32 Items"
             style={{paddingHorizontal: 24}}
             />
             
@@ -48,4 +48,4 @@ const HomeMenu = () => {
   );
 };
 
-export default HomeMenu;
+export default PackagesMenu;

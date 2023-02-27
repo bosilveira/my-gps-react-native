@@ -1,12 +1,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { LocationObject } from 'expo-location';
 import { checkLocationUpdates, startLocationUpdates, stopLocationUpdates, checkLocationPermissions } from "../utils/location.utils";
+
+// types
+import type { LocationState } from "../types/locationState.type";
+import { LocationStateStatus } from "../types/locationState.type";
 
 // 1) BACKGROUND (MAIN) LOCATION TRACKING
 // 1.1) Start Background (Main) Location Tracking
 export const startLocationUpdatesThunk = createAsyncThunk(
     "location/startLocationUpdates",
-    async ( args=undefined, { getState, dispatch } ) => {
+    async ( args = undefined, { getState, dispatch } ) => {
         const permissions = await checkLocationPermissions()
         if (!permissions) {
             throw Error('permissions')
@@ -22,31 +25,21 @@ export const startLocationUpdatesThunk = createAsyncThunk(
 // 1.2) Stop Background (Main) Location Tracking
 export const stopLocationUpdatesThunk = createAsyncThunk(
     "location/stopLocationUpdates",
-    async ( args=undefined, { getState } ) => {
+    async ( args = undefined, { getState } ) => {
         const status = await checkLocationUpdates();
         if (status) {
-            const state = getState() as any;
             await stopLocationUpdates()
         }
       }
   ); 
 
-
-export type LocationState = {
-    accuracy: number,
-    deferredUpdatesInterval: number,
-    status: string,
-    locationUpdates: boolean,
-    currentPosition: LocationObject,
-}
-
- const locationSlice = createSlice({
+const locationSlice = createSlice({
     name: "location",
     
     initialState: { 
         accuracy: 6,
         deferredUpdatesInterval: 0,
-        status: 'Location Service is OFF',
+        status: LocationStateStatus.OFF,
         locationUpdates: false,
         currentPosition: {
             coords:
@@ -61,7 +54,7 @@ export type LocationState = {
             }, 
             mocked: true,
             timestamp: 0
-        } as LocationObject
+        } 
     } as LocationState,
 
     reducers: {
@@ -87,26 +80,25 @@ export type LocationState = {
 
         builder.addCase(startLocationUpdatesThunk.fulfilled, (state, action) => {
             state.locationUpdates = true;
-            state.status = 'Location Service is ON';
+            state.status = LocationStateStatus.ON;
         });
 
         builder.addCase(stopLocationUpdatesThunk.fulfilled, (state, action) => {
             state.locationUpdates = false;
-            state.status = 'Location Service is OFF';
+            state.status = LocationStateStatus.OFF;
         });
 
         builder.addCase(startLocationUpdatesThunk.rejected, (state, action) => {
             state.locationUpdates = false;
-            state.status = 'Could not start Location Service';
+            state.status = LocationStateStatus.ERROR;
         });
 
         builder.addCase(startLocationUpdatesThunk.pending, (state, action) => {
-            state.status = 'Starting Location Service';
+            state.status = LocationStateStatus.STARTING;
         });
 
-
         builder.addCase(stopLocationUpdatesThunk.pending, (state, action) => {
-            state.status = 'Aborting Location Service';
+            state.status = LocationStateStatus.ABORTING;
         });
 
     },

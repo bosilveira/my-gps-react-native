@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setItemsPerPage } from '../../redux/database.slice';
 
 // types
-import type { DatabaseState } from '../../redux/database.slice';
+import type { DatabaseState } from '../../types/databaseState.type';
 
 export default function PaginationSettings() {
 

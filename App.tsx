@@ -44,7 +44,7 @@ export default function App() {
     return (
     <Provider store={store}>
         <NavigationContainer>
-            <Stack.Navigator initialRouteName="Packages">
+            <Stack.Navigator initialRouteName="Home">
                 <Stack.Screen name="Home" component={HomePage} options={{ headerShown: false }}/>
                 <Stack.Screen name="Packages" component={PackagesView} options={{ headerShown: false }}/>
                 <Stack.Screen name="SinglePackage" component={SinglePackageView} options={{ headerShown: false }}/>

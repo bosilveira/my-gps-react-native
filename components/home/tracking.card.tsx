@@ -10,8 +10,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { startLocationUpdatesThunk, stopLocationUpdatesThunk, setDeferredUpdatesInterval } from '../../redux/location.slice';
 
 // types
-import type { LocationState } from '../../redux/location.slice';
-import type { DatabaseState } from '../../redux/database.slice';
+import type { LocationState } from '../../types/locationState.type';
+import type { DatabaseState } from '../../types/databaseState.type';
 
 type Nav = { navigate: (value: string) => void }
 
@@ -51,22 +51,21 @@ export default function TrackingCard() {
         style={{margin: 8}}
         >
             <Card.Title
-            title="Location Tracking"
-            subtitle="Location (GPS) Service"
+            title="GPS Tracking"
+            subtitle="Location Service"
             right={() => <Switch value={switchLocationOn} onValueChange={()=>onToggleSwitchLocation()} style={{marginRight: 8}} />}
             left={(props) => <Avatar.Icon {...props} icon="car-connected"/>}
             />
+            
+            <Card.Content>
 
             <Chip
-            style={{margin: 8, padding: 8}}
+            style={{ padding: 8}}
             icon={location.locationUpdates ? "map-marker-radius-outline" : "map-marker-off-outline"} onPress={() => console.log('Pressed')}>
                 {location.status}
             </Chip>
 
-            <Divider style={{marginVertical: 8}} />
-            
-            <Card.Content>
-                <Text variant="labelLarge" style={{textAlign: 'center', width: '100%', marginTop: 4}}>Tracking Interval</Text>
+                <Text variant="labelLarge" style={{textAlign: 'center', width: '100%', marginTop: 8}}>Tracking Interval</Text>
                 <View>
                     <ToggleButton.Row
                     style={{display: 'flex', justifyContent: 'center', width: '100%', marginVertical: 8}}
@@ -80,22 +79,35 @@ export default function TrackingCard() {
                     </ToggleButton.Row>
                     <Button icon="car-connected" mode="outlined" onPress={() => navigate('Location')}
                     disabled={location.locationUpdates}
-                    style={{marginVertical: 16, marginHorizontal: 32}} >Check Tracking Settings</Button>
+                    style={{margin: 8}} >Location Settings</Button>
                 </View>
+                </Card.Content>
+
+                <Divider style={{marginVertical: 8}} />
+
+                <Card.Title
+                title="Current GPS Position"
+                subtitle="Store Position into Database"
+                left={(props) => <Avatar.Icon {...props} icon="map-marker-check"/>}
+                />
+
+                <Card.Content>
+
+                <Chip
+                style={{ padding: 8}}
+                icon="database" onPress={() => console.log('Pressed')}>
+                    Total: {database.size} Packages
+                </Chip>
+
+                <Button icon="map-marker-check" mode="contained" onPress={() => navigate('Packages')}
+                loading={location.locationUpdates} disabled={location.locationUpdates}
+                style={{margin: 8}} >Store Current Position</Button>
+
+
+
 
             </Card.Content>
 
-            <Divider style={{marginVertical: 8}} />
-
-            <Chip
-            style={{margin: 8, padding: 8}}
-            icon="database" onPress={() => console.log('Pressed')}>
-                Total: {database.size} Packages
-            </Chip>
-
-            <Button icon="database-outline" mode="contained" onPress={() => navigate('Packages')}
-            loading={location.locationUpdates} disabled={location.locationUpdates}
-            style={{marginVertical: 16, marginHorizontal: 32}} >Check Package List</Button>
 
         </Card>
     </ScrollView>

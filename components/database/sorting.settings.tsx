@@ -62,12 +62,6 @@ export default function SortingSettings() {
 
         <Divider style={{marginVertical: 8}} />
 
-        <Text
-        style={{textAlign: 'center'}}
-        >
-            Location manager accuracy. For low-accuracies the implementation can avoid geolocation providers that consume a significant amount of power (such as GPS).
-        </Text>
-
     </ScrollView>
     </>);
 }

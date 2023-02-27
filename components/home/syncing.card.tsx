@@ -13,14 +13,13 @@ import { setAPIAutoUpload } from '../../redux/network.slice';
 import type { LocationState } from '../../types/locationState.type';
 import type { NetworkState } from '../../types/networkState.type';
 import type { DatabaseState } from '../../types/databaseState.type';
-
 import * as Network from 'expo-network';
 type Nav = { navigate: (value: string) => void }
 
 // utils
 import { checkNetworkConnection } from '../../utils/api.utils';
 
-export default function UploadingCard() {
+export default function SyncingCard() {
   
     const { navigate } = useNavigation<Nav>()
 
@@ -66,53 +65,43 @@ export default function UploadingCard() {
         style={{margin: 8}}
         >
             <Card.Title
-            title="Auto Uploading"
-            subtitleNumberOfLines={0}
-            subtitle="Send New Packages to Server"
+            title="Package Syncing"
+            subtitle="Sync Offline Packages"
             right={() => <ToggleButton
-                icon={network.autoUpload ? "upload" : "upload-off"}
-                value="upload"
-                style={{marginRight: 16, borderColor: 'rgba(224, 224, 224, 1)', borderWidth: 1.5}}
+                icon={network.autoUpload ? "sync" : "sync-off"}
+                value="sync"
+                style={{marginRight: 8, borderColor: 'rgba(224, 224, 224, 1)', borderWidth: 1.5}}
                 status={switchAutoUploadOn ? "checked" : "unchecked"}
                 onPress={onToggleSwitchAutoUpload}
               />}
-            left={(props) => <Avatar.Icon {...props} icon="cloud-upload" />}
+            left={(props) => <Avatar.Icon {...props} icon="package-up" />}
             />
 
+            <Chip
+            style={{margin: 8, padding: 8}}
+            icon={networkConnection.isConnected ? "check-network-outline" : "close-network-outline"} 
+            onPress={() => console.log('Pressed')}>
+                {networkConnection.isConnected && networkConnection.isInternetReachable ? networkConnection.type?.toString() + " is connected" : "Server is not reachable"}
+            </Chip>
+            <Divider style={{marginVertical: 8}} />
+
             <Card.Content>
-                <Chip
-                style={{ padding: 8}}
-                icon="progress-upload">
-                    {network.autoUpload ? "Uploading is ON" : "Uploading is OFF"}
-                </Chip>
-                <Button icon="cloud-upload" mode="outlined" onPress={() => navigate('Network')}
-                style={{margin: 8}} >Network Settings</Button>
+            <Chip
+            style={{margin: 8, padding: 8}}
+            icon="database" onPress={() => console.log('Pressed')}>
+                Total: {database.size} Packages
+            </Chip>
+                    <Button icon="cloud-upload" mode="outlined" onPress={() => navigate('Network')}
+                    style={{marginVertical: 16, marginHorizontal: 32}} >Network Settings</Button>
             </Card.Content>
 
             <Divider style={{marginVertical: 8}} />
 
-            <Card.Title
-            title="Package Syncing"
-            subtitle={"Sync " + database.size + " Offline Packages"}
-            right={() => <ToggleButton
-                icon={network.autoUpload ? "sync" : "sync-off"}
-                value="sync"
-                style={{marginRight: 16, borderColor: 'rgba(224, 224, 224, 1)', borderWidth: 1.5}}
-                status={switchAutoUploadOn ? "checked" : "unchecked"}
-                onPress={onToggleSwitchAutoUpload}
-              />}
-            left={(props) => <Avatar.Icon {...props} icon="progress-upload" />}
-            />
 
-            <Card.Content>
-                <Chip
-                style={{ padding: 8}}
-                icon={networkConnection.isConnected ? "check-network-outline" : "close-network-outline"} 
-                onPress={() => console.log('Pressed')}>
-                    {networkConnection.isConnected && networkConnection.isInternetReachable ? networkConnection.type?.toString() + " is connected" : "Server is not reachable"}
-                </Chip>
 
-            </Card.Content>
+            <Text variant="labelLarge" style={{textAlign: 'center', padding: 8}}>
+                All location packages are saved into the database. If there is a fetch error, you can sync packages later.
+            </Text>
 
         </Card>
     </ScrollView>

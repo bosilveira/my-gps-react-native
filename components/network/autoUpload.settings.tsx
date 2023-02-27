@@ -4,7 +4,7 @@ import { ScrollView, View } from 'react-native';
 import { Text, Divider, Chip, ToggleButton } from 'react-native-paper';
 
 // types
-import type { NetworkState } from '../../redux/network.slice';
+import type { NetworkState } from '../../types/networkState.type';
 
 // redux
 import { useSelector, useDispatch } from 'react-redux';

@@ -13,6 +13,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Network'>;
 import AddressSettings from '../components/network/address.settings';
 import AutoUploadSettings from '../components/network/autoUpload.settings';
 import TimeoutSettings from '../components/network/timeout.settings';
+import ReiterationSettings from '../components/network/reiteration.settings';
 
 export default function NetworkView({ navigation }: Props) {
   
@@ -20,8 +21,7 @@ export default function NetworkView({ navigation }: Props) {
     const [ routes ] = React.useState([
         { key: 'test', title: 'Test', focusedIcon: 'access-point' },
         { key: 'address', title: 'Address', focusedIcon: 'link' },
-        { key: 'timeout', title: 'Interval', focusedIcon: 'timer-sand' },
-        { key: 'autoupload', title: 'AutoUpload', focusedIcon: 'progress-upload' },
+        { key: 'timeout', title: 'Timeout', focusedIcon: 'timer-sand' },
     ]);
   
     const renderScene: BottomNavigationProps["renderScene"] = ({ route }) => {

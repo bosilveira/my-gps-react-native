@@ -7,8 +7,9 @@ import { getAllLocationPackages } from './asyncStorage';
 import * as Battery from 'expo-battery';
 
 //types
-import type { LocationObject } from 'expo-location';
+import type { LocationCallback, LocationObject } from 'expo-location';
 import type { GyroscopeMeasurement } from 'expo-sensors';
+import type { MapData } from '../types/mapData.type';
 
 // redux
 import { store } from '../redux/store.redux';
@@ -52,21 +53,21 @@ export const requestLocationPermission = async () => {
 }
 
 // foreground tracking
-export const getLastKnownPosition = async () => {
-    const last = await Location.getLastKnownPositionAsync();
-    return last;
-}
+// export const getLastKnownPosition = async () => {
+//     const last = await Location.getLastKnownPositionAsync();
+//     return last;
+// }
 
 // 2) FOREGROUND TRACKING
 
 // 2.1) Get foreground location (current position)
-export const getCurrentPosition = async (accuracy:number=6) => {
+export const getCurrentPosition = async (accuracy: number = 6) => {
     const current = await Location.getCurrentPositionAsync({ accuracy });
     return current;
 }
 
 // 2.2) Start foreground location tracking
-export const watchPosition = async (accuracy:number, getPosition: (position: LocationObject) => void) => {
+export const watchPosition = async (accuracy: number, getPosition: Dispatch<React.SetStateAction<LocationObject>>): Promise<Location.LocationSubscription> => {
     const subscription = await Location.watchPositionAsync({ accuracy },
         (location)=>{
             getPosition(location);
@@ -80,7 +81,7 @@ export const watchPosition = async (accuracy:number, getPosition: (position: Loc
 const locationTaskName = "MY_GPS_LOCATION";
 
 // 3.1) Start background location tracking
-export const startLocationUpdates = async (accuracy=6, deferredUpdatesInterval=0) => {
+export const startLocationUpdates = async (accuracy: number = 6, deferredUpdatesInterval: number = 0) => {
     const count = await countLocationPackages();
     //setPackages(count);
     const task = await Location.startLocationUpdatesAsync(locationTaskName, { accuracy, deferredUpdatesInterval });
@@ -99,20 +100,19 @@ export const startLocationUpdates = async (accuracy=6, deferredUpdatesInterval=0
 }
 
 // 3.2) check if background location tracking is active and return boolean
-export const checkLocationUpdates = async ( ) => {
+export const checkLocationUpdates = async (): Promise<boolean> => {
     const check = await Location.hasStartedLocationUpdatesAsync(locationTaskName);
     return check;
 }
 
 // 3.3) stop background location tracking
-export const stopLocationUpdates = async ( ) => {
-    const task = await Location.stopLocationUpdatesAsync(locationTaskName);
+export const stopLocationUpdates = async () => {
+    await Location.stopLocationUpdatesAsync(locationTaskName);
     await store.dispatch(reloadLocationPackagesThunk());
-    return task;
 }
 
 // 4) convert milliseconds to date
-export const millisecondsToTime = (ms: number)=> {
+export const millisecondsToTime = (ms: number): string => {
     let date = new Date();
     date.setTime(ms);
     return date.toTimeString() 
@@ -124,44 +124,6 @@ export const reverseGeocode = async (location: LocationObject) => {
     return result;
 }
 
-export const watchGyroscope = (updateInterval: number, getGyroscope: Dispatch<React.SetStateAction<GyroscopeMeasurement>> ): ReturnType<GyroscopeSensor["addListener"]> => {
-    Gyroscope.setUpdateInterval(updateInterval);
-    const subscription = Gyroscope.addListener(gyroscopeData => {
-        //console.log('x',gyroscopeData.x.toString(),'y',gyroscopeData.y.toString(),'z',gyroscopeData.z.toString())
-        getGyroscope( (prevState: GyroscopeMeasurement) => { 
-            console.log('z',prevState.z.toString(), gyroscopeData.z.toString())
-
-            return { x: prevState.x + gyroscopeData.x, y: prevState.y + gyroscopeData.y, z: prevState.z + gyroscopeData.z } });
-    });
-    return subscription;
-}
-
-export type MapData = { 
-    center: {
-        centerLatitude: number,
-        centerLongitude: number,
-    },
-    limits: {
-        minLatitude: number,
-        maxLatitude: number,
-        minLongitude: number,
-        maxLongitude: number,
-        minAccuracy: number,
-        maxAccuracy: number
-    },
-    user: {
-        currentPosition: LocationObject,
-        normalizedCurrentPositionX: number,
-        normalizedCurrentPositionY: number
-    },
-    points: {
-        x: number,
-        y: number,
-        accuracy: number,
-        status: string,
-        power: Battery.PowerState
-    }[]
-}
 
 export const getMap = async (): Promise<MapData> =>{
     const currentPosition = await getCurrentPosition(6);
@@ -212,5 +174,5 @@ export const getMap = async (): Promise<MapData> =>{
             normalizedCurrentPositionY
         },
         points
-    }
+    };
 }

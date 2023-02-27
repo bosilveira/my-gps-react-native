@@ -1,9 +1,22 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { checkNetworkConnection } from "../utils/api.utils";
+import * as Network from 'expo-network';
+
+// types
+import { NetworkState } from "../types/networkState.type";
+
+const checkConnection = createAsyncThunk(
+    "network/checkConnectionThunk",
+    async (): Promise<Network.NetworkState> => {
+        const connection = await checkNetworkConnection();
+        return connection;
+    }
+)
 
 const restoreApiData = createAsyncThunk(
     "network/restoreApiData",
-    async ( ) => {
+    async () => {
         let storageError = false;
         let address = '';
         let timeout = '';
@@ -19,14 +32,6 @@ const restoreApiData = createAsyncThunk(
     }
 );
 
-export type NetworkState = {
-    address: string,
-    timeout: number,
-    autoUpload: boolean,
-    //token: string,
-
-}
-
 const networkSlice = createSlice({
     name: "network",
 
@@ -35,6 +40,7 @@ const networkSlice = createSlice({
         timeout: 4000,
         autoUpload: true,
         //token: '',
+        fetchErrorCount: 0
     } as NetworkState,
 
     reducers: {
@@ -50,6 +56,9 @@ const networkSlice = createSlice({
         // setAPIToken: (state, action) => {
         //     state.timeout = action.payload;
         // },
+        incrementFetchErrorCount: (state) => {
+            state.fetchErrorCount += 1;
+        },
     },
     extraReducers: (builder) => {
         builder.addCase(restoreApiData.fulfilled, (state, action) => {
@@ -58,5 +67,5 @@ const networkSlice = createSlice({
     },
 });
   
-export const { setAPIAddress, setAPITimeout, setAPIAutoUpload } =  networkSlice.actions;
+export const { setAPIAddress, setAPITimeout, setAPIAutoUpload, incrementFetchErrorCount } =  networkSlice.actions;
 export default networkSlice.reducer;

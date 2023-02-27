@@ -9,8 +9,8 @@ import { Appbar, Divider, Button, SegmentedButtons, Card, Switch, Avatar, List, 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../App';
 type Props = NativeStackScreenProps<RootStackParamList, 'Packages'>;
-import type { DatabaseState } from '../../redux/database.slice';
-import type { LocationState } from '../../redux/location.slice';
+import type { DatabaseState } from '../../types/databaseState.type';
+import type { LocationState } from '../../types/locationState.type';
 
 // redux
 import { useSelector, useDispatch } from 'react-redux';
@@ -19,9 +19,11 @@ import { countLocationPackagesThunk, paginateLocationPackagesThunk, reloadLocati
 import { startLocationUpdatesThunk, stopLocationUpdatesThunk } from '../../redux/location.slice';
 
 // components
-import PackageCard from '../../components/packageCard';
+import PackagesMenu from './packages.menu';
+import PackageCard from '../packageCard';
 
-export default function PackagesView({ navigation }: Props) {
+
+export default function PackageList() {
 
     // Redux state
     const dispatch = useDispatch<AppDispatch>();
@@ -53,54 +55,55 @@ export default function PackagesView({ navigation }: Props) {
     }
 
   return (<>
+    <ScrollView style={{backgroundColor: 'rgba(245, 245, 245, 1)'}}>
 
-    <StatusBar 
-    animated={true}
-    translucent={true}
-    backgroundColor="#CCCCFF"
-    />
-    
-    <Appbar.Header>
-        <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
-        <Appbar.Content title={"Packages: " + database.size} />
-        <Appbar.Action icon="sync" onPress={() => {}} />
-        <Appbar.Action icon="dots-vertical" onPress={()=>{}} />
-    </Appbar.Header>
-    <View>
+        <Card
+        style={{margin: 8}}
+        >
+            <Card.Title
+            title="Location Package Database"
+            subtitle={!database.loading ? 'Packages ' + pageFirstItem() + '-' + pageLastItem() + ' of '  + (database.size).toString() : "Updating Database"}
+            right={() => <PackagesMenu/>}
+            left={(props) => <Avatar.Icon {...props} icon="database"/>}
+            />
+            
+            <Card.Content>
 
-        <SegmentedButtons
-        value={database.currentPage.toString()}
-        style={{marginHorizontal: 12, marginVertical: 8}}
-        density="small"
-        onValueChange={(value)=>dispatch(paginateLocationPackagesThunk({page: parseInt(value), itemsPerPage: database.itemsPerPage}))}
-        buttons={[
-            {
-                value: (database.currentPage - 1).toString(),
-                label: 'Previous'
-            },
-            {
-                value: (database.currentPage).toString(),
-                label: !database.loading ? '' + pageFirstItem() + '-' + pageLastItem() + '/'  + (database.size).toString() : (database.size).toString()
-            },
-            {
-                value: (database.currentPage + 1).toString(),
-                label: 'Next'
-            },
-        ]}
-        />
-    </View>
+                <SegmentedButtons
+                value={database.currentPage.toString()}
+                density="small"
+                onValueChange={(value)=>dispatch(paginateLocationPackagesThunk({page: parseInt(value), itemsPerPage: database.itemsPerPage}))}
+                buttons={[
+                    {
+                        value: (database.currentPage - 1).toString(),
+                        icon: 'page-first'
+                    },
+                    {
+                        value: (database.currentPage - 1).toString(),
+                        icon: 'page-previous-outline'
+                    },
+                    {
+                        value: (database.currentPage - 1).toString(),
+                        icon: 'page-next-outline'
+                    },
+                    {
+                        value: (database.currentPage - 1).toString(),
+                        icon: 'page-last'
+                    },
+                ]}
+                />
 
+            </Card.Content>
 
-    <ScrollView>
+        </Card>
 
         <View>
-            {!database.loading && database.size > 0 && database.currentPageList.map((item: any, index: any)=><PackageCard key={item} packageId={item}/>)}
+            {false && !database.loading && database.size > 0 && database.currentPageList.map((item: any, index: any)=><PackageCard key={item} packageId={item}/>)}
             {database.loading && <ActivityIndicator size={32} animating={true} style={{marginTop: 32}}/>} 
 
         </View>
 
     </ScrollView>
-
 
     </>);
 }

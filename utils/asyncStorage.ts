@@ -2,90 +2,49 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Battery from 'expo-battery';
 import * as Device from 'expo-device';
-import { LocationObject } from 'expo-location';
 
-export interface Package {
-    packageId: string,
-    location: {
-        coords:
-        {
-            accuracy: number,
-            altitude: number,
-            altitudeAccuracy: number,
-            heading: number,
-            latitude: number,
-            longitude: number,
-            speed: number
-        }, 
-        mocked: boolean,
-        timestamp: number
-    },
-    power: {
-        batteryLevel: number,
-        batteryState: Battery.BatteryState,
-        lowPowerMode: boolean,
-    },
-    status: string
-} 
+// types
+import type { LocationPackage } from '../types/locationPackage.type';
+import { LocationObject } from 'expo-location';
 
 // Location Package Database Entry Prefix
 const packagePrefix = "@_";
 
 // Save Location Package Entry into Database (AsyncStorage)
-export const saveLocationPackage = async (packageId: string, location: LocationObject) => {
+export const saveLocationPackage = async (id: string, location: LocationObject) => {
     const power = await Battery.getPowerStateAsync();
     const status = 'pending';
-    const item = { packageId, location, power, status }
-    try {
-        const jsonValue = JSON.stringify(item)
-        await AsyncStorage.setItem(packagePrefix + packageId, jsonValue)
-    } catch (e) {
-        // saving error
-    }
+    const item = { id, location, power, status };
+    const jsonValue = JSON.stringify(item);
+    await AsyncStorage.setItem(packagePrefix + id, jsonValue);
 }
 
-// Retrieve Location Package by packageId from Database (AsyncStorage)
-export const getLocationPackageById = async (packageId: string) => {
-    try {
-        const jsonValue = await AsyncStorage.getItem(packagePrefix + packageId)
-        return jsonValue != null ? JSON.parse(jsonValue) : null
-    } catch(e) {
-        // read error
-    }
+// Retrieve Location Package from Database (AsyncStorage)
+export const getLocationPackage = async (id: string): Promise<LocationPackage> => {
+    const jsonValue = await AsyncStorage.getItem(packagePrefix + id) as string;
+    const locationPackage: LocationPackage = JSON.parse(jsonValue);
+    return locationPackage;
 }
 
 // Update Location Package status in Database (AsyncStorage)
-export const updateLocationPackageStatus = async (packageId: string, status: string) => {
+export const updateLocationPackageStatus = async (id: string, status: string) => {
     const update = { status }
-    try {
-        await AsyncStorage.mergeItem(packagePrefix + packageId, JSON.stringify(update));
-    } catch (e) {
-        // saving error
-    }
+    await AsyncStorage.mergeItem(packagePrefix + id, JSON.stringify(update));
 }
 
-// Delete Location Package status (AsyncStorage)
-export const deleteLocationPackage = async (packageId: string) => {
-    try {
-        await AsyncStorage.removeItem(packagePrefix + packageId)
-    } catch (e) {
-        // saving error
-    }
+// Delete Location Package (AsyncStorage)
+export const deleteLocationPackage = async (id: string) => {
+    await AsyncStorage.removeItem(packagePrefix + id);
 }
 
 // CAUTION!!!
 export const clearLocationDatabase = async () => {
-    await AsyncStorage.clear()
+    await AsyncStorage.clear();
 }
 
-
-export const getLocationPackagesPerPage = async ( currentPage: number, itemsPerPage: number ) => {
+export const getLocationPackagesPerPage = async (currentPage: number, itemsPerPage: number) => {
     let keys = [];
-    try {
-        keys = await AsyncStorage.getAllKeys() as any;
-    } catch(e) {
-        // read key error
-    }
+    keys = await AsyncStorage.getAllKeys() as string[];
     const list = keys.filter((item: string)=> item.slice(0,packagePrefix.length) === packagePrefix);
     list.reverse();
     const size = list.length;
@@ -107,7 +66,7 @@ export const getMultiple = async () => {
     const list = keys.filter((item: string)=> item.slice(0,packagePrefix.length) === packagePrefix);
     const values = await AsyncStorage.multiGet(list);
 
-    const locationPackages: Package[] = []
+    const locationPackages: LocationPackage[] = []
     values.forEach( async (item, index)=> {
         const data = JSON.parse(item[1] as string);
         locationPackages.push(data);
@@ -124,7 +83,7 @@ export const getMultiple = async () => {
     const list = keys.filter((item: string)=> item.slice(0,packagePrefix.length) === packagePrefix);
     const values = await AsyncStorage.multiGet(list);
 
-    const locationPackages: Package[] = []
+    const locationPackages: LocationPackage[] = []
     values.forEach( async (item, index)=> {
         const data = JSON.parse(item[1] as string);
         locationPackages.push(data);

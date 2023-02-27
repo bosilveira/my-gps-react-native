@@ -12,7 +12,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, BottomTabParamList } from '../App';
 import type { BottomNavigationProps } from 'react-native-paper';
-import type { LocationState } from '../redux/location.slice';
+import type { LocationState } from '../types/locationState.type';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -20,6 +20,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 import HomeMenu from '../components/home/home.menu';
 import TrackingCard from '../components/home/tracking.card';
 import UploadingCard from '../components/home/uploading.card';
+import MapCard from '../components/packages/map.card';
+import PackageList from '../components/home/package.list';
 
 export default function HomePage({ navigation }: Props) {
 
@@ -30,19 +32,21 @@ export default function HomePage({ navigation }: Props) {
     const [ routes ] = React.useState([
         { key: 'uploading', title: 'Uploading', focusedIcon: 'cloud-upload-outline' },
         { key: 'tracking', title: 'Tracking', focusedIcon: 'car-connected' },
-        { key: 'database', title: 'Database', focusedIcon: 'database-outline' },
+        { key: 'database', title: 'Packages', focusedIcon: 'format-list-checks' },
+        { key: 'map', title: 'Map', focusedIcon: 'vector-square' },
     ]);
 
     const renderScene: BottomNavigationProps["renderScene"] = ({ route }) => {
         switch (route.key) {
             case 'database':
-                return <ScrollView style={{backgroundColor: 'rgba(245, 245, 245, 1)'}}>
-                </ScrollView>;
+                return <PackageList/>;
             case 'tracking':
                 return <TrackingCard />;
             case 'uploading':
                 return <UploadingCard />;
-        }
+            case 'map':
+                return <MapCard />;
+            }
     }
 
     return (<>
@@ -57,7 +61,6 @@ export default function HomePage({ navigation }: Props) {
         <Appbar.Header>
             <Appbar.Action icon="home" />
             <Appbar.Content title="My GPS" />
-            <Appbar.Action icon="help-circle-outline" onPress={() => navigation.navigate('Help')} />
             <HomeMenu />
         </Appbar.Header>
         <ProgressBar progress={0} indeterminate={location.locationUpdates} />

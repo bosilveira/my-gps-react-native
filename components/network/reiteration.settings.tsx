@@ -11,7 +11,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../redux/store.redux';
 import { setAPITimeout } from '../../redux/network.slice';
 
-export default function TimeoutSettings() {
+export default function ReiterationSettings() {
   
     // Redux
     const network = useSelector((state: RootState) => state.network) as NetworkState;

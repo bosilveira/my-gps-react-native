@@ -3,15 +3,15 @@ import * as React from 'react';
 import { View, SafeAreaView, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native-paper';
-import { Appbar, Divider, Button, SegmentedButtons, Card, Switch, Avatar, List, Chip, ActivityIndicator, BottomNavigation } from 'react-native-paper';
+import { Appbar, Divider, Button, SegmentedButtons, Card, Switch, Avatar, List, Chip, ActivityIndicator, BottomNavigation, Provider } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 // types
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
 import type { BottomNavigationProps } from 'react-native-paper';
-import type { DatabaseState } from '../redux/database.slice';
-import type { LocationState } from '../redux/location.slice';
+import type { DatabaseState } from '../types/databaseState.type';
+import type { LocationState } from '../types/locationState.type';
 type Props = NativeStackScreenProps<RootStackParamList, 'Packages'>;
 
 // redux
@@ -23,6 +23,12 @@ import { startLocationUpdatesThunk, stopLocationUpdatesThunk } from '../redux/lo
 // components
 import PackageCard from '../components/packageCard';
 import MapCard from '../components/packages/map.card';
+import PackagesMenu from '../components/packages/packages.menu';
+import PaginationSettings from '../components/database/pagination.settings';
+import SortingSettings from '../components/database/sorting.settings';
+import FilterSettings from '../components/packages/filter.settings';
+
+import { millisecondsToTime } from '../utils/location.utils';
 
 export default function PackagesView({ navigation }: Props) {
 
@@ -66,15 +72,18 @@ export default function PackagesView({ navigation }: Props) {
         { key: 'filter', title: 'Filter', focusedIcon: 'filter' },
         { key: 'map', title: 'Map', focusedIcon: 'map' },
         { key: 'sync', title: 'Sync', focusedIcon: 'sync' },
+        { key: 'export', title: 'Export', focusedIcon: 'export' },
+        { key: 'query', title: 'Query', focusedIcon: 'database-search-outline' },
     ]);
 
     const renderScene: BottomNavigationProps["renderScene"] = ({ route }) => {
         switch (route.key) {
+            case 'pagination':
+                return <PaginationSettings />;
+            case 'sorting':
+                return <SortingSettings />;
             case 'filter':
-                return <ScrollView style={{backgroundColor: 'rgba(245, 245, 245, 1)'}}>
-                    {show && <DateTimePicker value={new Date()} mode='date' onChange={(event, selectedDate)=>{console.log(event, selectedDate);setShow(false);}}/>}
-                    <Button onPress={()=>setShow(previous=>!previous)}>TimePicker {show.toString()}</Button>
-                </ScrollView>;
+                return <FilterSettings/>;
             case 'list':
                 return <>
                 <ScrollView>
@@ -102,8 +111,13 @@ export default function PackagesView({ navigation }: Props) {
                         />
                     </View>
 
+                    <Chip
+                    style={{padding: 8, marginHorizontal: 12, marginVertical: 4}}
+                    icon="timeline-clock-outline" mode="outlined" onPress={() => console.log('Pressed')}>Showing Last 4 Hours
+                    </Chip>
+
                     <View>
-                        {!database.loading && database.size > 0 && database.currentPageList.map((item: any, index: any)=><PackageCard key={item} packageId={item}/>)}
+                        {false && !database.loading && database.size > 0 && database.currentPageList.map((item: any, index: any)=><PackageCard key={item} packageId={item}/>)}
                         {database.loading && <ActivityIndicator size={32} animating={true} style={{marginTop: 32}}/>} 
 
                     </View>
@@ -115,28 +129,27 @@ export default function PackagesView({ navigation }: Props) {
     }
 
 
-  return (<>
+    return (<>
+    <Provider>
+        <StatusBar 
+        animated={true}
+        translucent={true}
+        backgroundColor="#CCCCFF"
+        />
+        
+        <Appbar.Header>
+            <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
+            <Appbar.Content title={"Packages: " + database.size} />
+            <PackagesMenu/>
+        </Appbar.Header>
 
-    <StatusBar 
-    animated={true}
-    translucent={true}
-    backgroundColor="#CCCCFF"
-    />
-    
-    <Appbar.Header>
-        <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
-        <Appbar.Content title={"Packages: " + database.size} />
-        <Appbar.Action icon="sync" onPress={() => {}} />
-        <Appbar.Action icon="dots-vertical" onPress={()=>{}} />
-    </Appbar.Header>
-
-    <BottomNavigation
-            sceneAnimationEnabled={true}
-            sceneAnimationType="shifting"
-            navigationState={{ index: tabNavIndex, routes }}
-            onIndexChange={setTabNavIndex}
-            renderScene={renderScene}
-          />
-
+        <BottomNavigation
+        sceneAnimationEnabled={true}
+        sceneAnimationType="shifting"
+        navigationState={{ index: tabNavIndex, routes }}
+        onIndexChange={setTabNavIndex}
+        renderScene={renderScene}
+        />
+    </Provider>
     </>);
 }

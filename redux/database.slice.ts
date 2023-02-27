@@ -1,12 +1,14 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { LocationObject } from 'expo-location';
-import { countLocationPackages, getLocationPackagesPerPage, clearStorage, deletePendingPackage, countPendingPackages,
-    countSentPackages, getPackagesPerPage, getPackagesPerPageAndType,  } from "../utils/asyncStorage";
+import { countLocationPackages, getLocationPackagesPerPage, clearStorage } from "../utils/asyncStorage";
+
+// types
+import type { DatabaseState } from "../types/databaseState.type";
+import { DatabaseSorting } from "../types/databaseState.type";
 
 // count database package entries; return packages (total), pending, and sent
 export const countLocationPackagesThunk = createAsyncThunk(
     "database/countLocationPackages",
-    async ( ) => {
+    async (): Promise<number> => {
         const size = await countLocationPackages();
         return size;
     }
@@ -15,7 +17,7 @@ export const countLocationPackagesThunk = createAsyncThunk(
 // get packages per page
 export const paginateLocationPackagesThunk = createAsyncThunk(
     "database/paginateLocationPackages",
-    async ( args: any ) => {
+    async (args: any) => {
         const { page, itemsPerPage } = args;
         const { size, currentPage, currentPagelist, totalPages } = await getLocationPackagesPerPage(page, itemsPerPage);
         return { size, itemsPerPage, currentPage, currentPagelist, totalPages };
@@ -32,54 +34,46 @@ export const reloadLocationPackagesThunk = createAsyncThunk(
     }
 );
 
-
 // delete all database entries
 export const clearDatabaseThunk = createAsyncThunk(
     "database/clearDatabase",
-    async ( ) => {
+    async () => {
         clearStorage();
         return 0;
     }
 );
-
-export type DatabaseState = {
-    size: number,
-    itemsPerPage: number,
-    totalPages: number,
-    currentPage: number,
-    currentPageList: any[],
-    sorting: string,
-    query: {
-        applied: false,
-        start: number,
-        end: number
-    }
-    loading: boolean
-}
 
 const databaseSlice = createSlice({
     name: "database",
 
     initialState: {
         size: 0,
-        itemsPerPage: 4,
+        itemsPerPage: 8,
         totalPages: 0,
         currentPage: 0,
         currentPageList: [],
-        sorting: 'ASC',
-        query: {
-            applied: false,
-            start: 0,
-            end: 0,
-        },
+        sorting: DatabaseSorting.ASC,
         loading: false
-    },
+    } as DatabaseState,
 
     reducers: {
 
         setItemsPerPage: (state, action) => {
             state.itemsPerPage = action.payload 
         },
+
+        setSorting: (state, action) => {
+            state.sorting = action.payload.sorting;
+        },
+
+        setSortingASC: (state) => {
+            state.sorting = DatabaseSorting.ASC;
+        },
+
+        setSortingDESC: (state) => {
+            state.sorting = DatabaseSorting.DESC;
+        },
+
 
     },
     extraReducers: (builder) => {
@@ -128,5 +122,5 @@ const databaseSlice = createSlice({
     },
 });
   
-export const { setItemsPerPage } =  databaseSlice.actions;
+export const { setItemsPerPage, setSortingASC, setSortingDESC, setSorting } =  databaseSlice.actions;
 export default databaseSlice.reducer;

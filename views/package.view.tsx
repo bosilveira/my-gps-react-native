@@ -87,9 +87,8 @@ export default function SinglePackageView({ route, navigation }: Props) {
 
         <Chip
         style={{padding: 8, margin: 12}}
-        icon="information" onPress={() => console.log('Pressed')}>Total Packages: {database.size}</Chip>
-
-
+        icon="information" onPress={() => console.log('Pressed')}>Total Packages: {database.size}
+        </Chip>
 
         <List.Section
             style={{marginVertical: 16, marginHorizontal: 16}}
