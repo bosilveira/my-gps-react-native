@@ -8,11 +8,12 @@ import { Text, Appbar, Divider, Button, List, ActivityIndicator, RadioButton } f
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
 type Props = NativeStackScreenProps<RootStackParamList, 'Watch'>;
+import { LocationObject } from 'expo-location';
 
 // redux
 import { AppDispatch, RootState } from '../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
-import { setWatchPosition, setAccuracy, setDeferredUpdatesInterval } from '../redux/location.slice';
+import { setCurrentPosition, setAccuracy, setDeferredUpdatesInterval } from '../redux/location.slice';
 
 // utils
 import { watchPosition, millisecondsToTime } from '../utils/location.utils';
@@ -24,14 +25,32 @@ export default function WatchView({ navigation }: Props) {
     const dispatch = useDispatch<AppDispatch>();
 
     // Location Watch controller
+    const [ isWatching, setIsWatching] = React.useState(false);
+    const [ position, setPosition] = React.useState(
+        {
+            coords:
+            {
+                accuracy: 0,
+                altitude: 0,
+                altitudeAccuracy: 0,
+                heading: 0,
+                latitude: 0,
+                longitude: 0,
+                speed: 0
+            }, 
+            mocked: true,
+            timestamp: 0
+        } as LocationObject);
+
+    // Activates on page loading and deactivates on exiting
     React.useEffect(()=>{
-        if (location.watchPosition) {
-            const watcher = watchPosition(location.accuracy)
+        if (isWatching) {
+            const watcher = watchPosition(location.accuracy, setPosition)
             return () => {
                 watcher.then((subscription)=>subscription.remove())
             }
         }
-    },[location.watchPosition])
+    },[isWatching])
 
     return (<>
 
@@ -44,19 +63,19 @@ export default function WatchView({ navigation }: Props) {
     <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.navigate('Home')} />
         <Appbar.Content title="Location Watcher" />
-        <Appbar.Action icon="broadcast" onPress={() => {}} />
+        <Appbar.Action icon="map-marker" onPress={() => {}} />
     </Appbar.Header>
 
     <ScrollView>
 
         <Text variant="titleMedium"
-        style={{marginTop: 16, marginHorizontal: 12}}
+        style={{marginTop: 16, marginHorizontal: 12, textAlign: 'center'}}
         >
             Test Location Tracking
         </Text>
 
         <Text
-        style={{marginVertical: 4, marginHorizontal: 12}}
+        style={{marginVertical: 4, marginHorizontal: 12, textAlign: 'center'}}
         >
             Please utilize this service to verify location data. Values that are displayed are not stored in the database; please use the home page for this purpose.
         </Text>
@@ -65,9 +84,9 @@ export default function WatchView({ navigation }: Props) {
 
 
         <Button
-        icon={location.watchPosition ? ()=><ActivityIndicator animating={location.watchPosition} color={'white'}/> : "radar"}
+        icon={isWatching ? ()=><ActivityIndicator animating={isWatching} color={'white'}/> : "radar"}
         mode="contained"
-        onPress={() => dispatch(setWatchPosition(!location.watchPosition))}
+        onPress={() => setIsWatching(previous=>!previous)}
         style={{marginVertical: 8, marginHorizontal: 32}}
         >
         Watch Position
@@ -79,49 +98,49 @@ export default function WatchView({ navigation }: Props) {
     
                 <List.Item
                 title={"Tracking Status"}
-                description={location.watchPosition ? "Location Tracking is ACTIVATED" : "Location Tracking is DEACTIVATED"}
-                left={props => <List.Icon {...props} icon={ location.watchPosition ? "map-marker-radius-outline" : "map-marker-off-outline"} />}
+                description={isWatching ? "Location Tracking is ACTIVATED" : "Location Tracking is DEACTIVATED"}
+                left={props => <List.Icon {...props} icon={ isWatching ? "map-marker-radius-outline" : "map-marker-off-outline"} />}
                 />
 
                 <List.Item
                 title="Last Update"
-                description={()=> location.watchPosition ? <Text>{millisecondsToTime(location.currentPosition.timestamp)}</Text> : null}
+                description={()=> isWatching ? <Text>{millisecondsToTime(position.timestamp)}</Text> : null}
                 left={props => <List.Icon {...props} icon="update" />}
                 />
 
                 <List.Item
                 title="Latitude"
-                description={()=> location.watchPosition ? <Text>{location.currentPosition.coords.latitude}</Text> : null}
+                description={()=> isWatching ? <Text>{position.coords.latitude}</Text> : null}
                 left={props => <List.Icon {...props} icon="latitude" />}
                 />
 
                 <List.Item
                 title="Longitude"
-                description={()=> location.watchPosition ? <Text>{location.currentPosition.coords.longitude}</Text> : null}
+                description={()=> isWatching ? <Text>{position.coords.longitude}</Text> : null}
                 left={props => <List.Icon {...props} icon="longitude" />}
                 />
 
                 <List.Item
                 title="Altitude"
-                description={()=> location.watchPosition ? <Text>{location.currentPosition.coords.altitude}</Text> : null}
+                description={()=> isWatching ? <Text>{position.coords.altitude}</Text> : null}
                 left={props => <List.Icon {...props} icon="altimeter" />}
                 />
 
                 <List.Item
                 title="Speed"
-                description={()=> location.watchPosition ? <Text>{location.currentPosition.coords.speed}</Text> : null}
+                description={()=> isWatching ? <Text>{position.coords.speed}</Text> : null}
                 left={props => <List.Icon {...props} icon="speedometer" />}
                 />
 
                 <List.Item
                 title="Compass"
-                description={()=> location.watchPosition ? <Text>{location.currentPosition.coords.heading}</Text> : null}
+                description={()=> isWatching ? <Text>{position.coords.heading}</Text> : null}
                 left={props => <List.Icon {...props} icon="compass" />}
                 />
 
                 <List.Item
                 title="Accuracy"
-                description={()=> location.watchPosition ? <Text>{location.currentPosition.coords.accuracy}</Text> : null}
+                description={()=> isWatching ? <Text>{position.coords.accuracy}</Text> : null}
                 left={props => <List.Icon {...props} icon="crosshairs-gps" />}
                 />
 

@@ -1,10 +1,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { LocationObject } from 'expo-location';
-import { checkLocationUpdates, startLocationUpdates, stopLocationUpdates, checkLocationPermissions } from "../utils/location.utils";
+import { checkLocationUpdates, startLocationUpdates, stopLocationUpdates, checkLocationPermissions, getAndStoreCurrentPosition } from "../utils/location.utils";
 
+// types
+import type { LocationState } from "../types/locationState.type";
+import { LocationStateStatus } from "../types/locationState.type";
+
+// 1) BACKGROUND (MAIN) LOCATION TRACKING
+// 1.1) Start Background (Main) Location Tracking
 export const startLocationUpdatesThunk = createAsyncThunk(
     "location/startLocationUpdates",
-    async ( args=undefined, { getState, dispatch } ) => {
+    async ( args = undefined, { getState, dispatch } ) => {
         const permissions = await checkLocationPermissions()
         if (!permissions) {
             throw Error('permissions')
@@ -17,41 +22,54 @@ export const startLocationUpdatesThunk = createAsyncThunk(
     }
 ); 
 
+// 1.2) Stop Background (Main) Location Tracking
 export const stopLocationUpdatesThunk = createAsyncThunk(
     "location/stopLocationUpdates",
-    async ( args=undefined, { getState } ) => {
+    async ( args = undefined, { getState } ) => {
         const status = await checkLocationUpdates();
         if (status) {
-            const state = getState() as any;
             await stopLocationUpdates()
         }
       }
-  ); 
+); 
 
-const initialState = {
-    accuracy: 6,
-    deferredUpdatesInterval: 0,
-    watchPosition: false,
-    locationUpdates: false,
-    currentPosition: {
-        coords:
-        {
-            accuracy: 0,
-            altitude: 0,
-            altitudeAccuracy: 0,
-            heading: 0,
-            latitude: 0,
-            longitude: 0,
-            speed: 0
-        }, 
-        mocked: true,
-        timestamp: 0
-    } as LocationObject,
- } as any;
+// 2) FOREGROUND LOCATION TRACKING
+export const getAndStoreCurrentPositionThunk = createAsyncThunk(
+    "location/getAndStoreCurrentPosition",
+    async ( args = undefined, { getState, dispatch } ) => {
+        const permissions = await checkLocationPermissions()
+        if (!permissions) {
+            throw Error('permissions')
+        }
+        const state = getState() as any;
+        await getAndStoreCurrentPosition(state.location.accuracy);
+    }
+); 
 
- const locationSlice = createSlice({
+const locationSlice = createSlice({
     name: "location",
-    initialState,
+    
+    initialState: { 
+        accuracy: 6,
+        deferredUpdatesInterval: 0,
+        status: LocationStateStatus.OFF,
+        locationUpdates: false,
+        currentPosition: {
+            coords:
+            {
+                accuracy: 0,
+                altitude: 0,
+                altitudeAccuracy: 0,
+                heading: 0,
+                latitude: 0,
+                longitude: 0,
+                speed: 0
+            }, 
+            mocked: true,
+            timestamp: 0
+        } 
+    } as LocationState,
+
     reducers: {
 
         setAccuracy: (state, action) => {
@@ -60,10 +78,6 @@ const initialState = {
 
         setDeferredUpdatesInterval: (state, action) => {
             state.deferredUpdatesInterval = action.payload 
-        },
-
-        setWatchPosition: (state, action) => {
-            state.watchPosition = action.payload
         },
 
         setLocationUpdates: (state, action) => {
@@ -77,20 +91,46 @@ const initialState = {
     },
     extraReducers: (builder) => {
 
-        builder.addCase(startLocationUpdatesThunk.fulfilled, (state, action) => {
+        builder.addCase(getAndStoreCurrentPositionThunk.pending, (state, action) => {
             state.locationUpdates = true;
+            state.status = LocationStateStatus.GETTING;
         });
 
-        builder.addCase(startLocationUpdatesThunk.rejected, (state, action) => {
+        builder.addCase(getAndStoreCurrentPositionThunk.fulfilled, (state, action) => {
             state.locationUpdates = false;
+            state.status = LocationStateStatus.GETTING_SUCCESS;
+        });
+
+        builder.addCase(getAndStoreCurrentPositionThunk.rejected, (state, action) => {
+            state.locationUpdates = false;
+            state.status = LocationStateStatus.GETTING_ERROR;
+        });
+
+        builder.addCase(startLocationUpdatesThunk.fulfilled, (state, action) => {
+            state.locationUpdates = true;
+            state.status = LocationStateStatus.ON;
         });
 
         builder.addCase(stopLocationUpdatesThunk.fulfilled, (state, action) => {
             state.locationUpdates = false;
+            state.status = LocationStateStatus.OFF;
+        });
+
+        builder.addCase(startLocationUpdatesThunk.rejected, (state, action) => {
+            state.locationUpdates = false;
+            state.status = LocationStateStatus.ERROR;
+        });
+
+        builder.addCase(startLocationUpdatesThunk.pending, (state, action) => {
+            state.status = LocationStateStatus.STARTING;
+        });
+
+        builder.addCase(stopLocationUpdatesThunk.pending, (state, action) => {
+            state.status = LocationStateStatus.ABORTING;
         });
 
     },
 });
   
-export const { setAccuracy, setDeferredUpdatesInterval, setWatchPosition, setLocationUpdates, setCurrentPosition  } =  locationSlice.actions;
+export const { setAccuracy, setDeferredUpdatesInterval, setLocationUpdates, setCurrentPosition } =  locationSlice.actions;
 export default locationSlice.reducer;
