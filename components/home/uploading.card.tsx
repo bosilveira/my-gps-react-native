@@ -13,6 +13,7 @@ import { setAPIAutoUpload, checkConnectionThunk } from '../../redux/network.slic
 import type { LocationState } from '../../types/locationState.type';
 import type { NetworkState } from '../../types/networkState.type';
 import type { DatabaseState } from '../../types/databaseState.type';
+import { countLocationPackagesThunk } from '../../redux/database.slice';
 type Nav = { navigate: (value: string) => void }
 
 export default function UploadingCard() {
@@ -32,6 +33,12 @@ export default function UploadingCard() {
         }
     },[])
 
+    // Pagination controller
+    React.useEffect(()=>{
+        dispatch(countLocationPackagesThunk());
+    },[])
+
+
     return (<>
     <ScrollView style={{backgroundColor: 'rgba(245, 245, 245, 1)'}}>
         <Card
@@ -42,11 +49,11 @@ export default function UploadingCard() {
             subtitleNumberOfLines={0}
             subtitle="Send New Packages to Server"
             right={() => <ToggleButton
-                icon={network.autoUpload ? "upload" : "upload-off"}
+                icon={network.upload ? "upload" : "upload-off"}
                 value="upload"
                 style={{marginRight: 16, borderColor: 'rgba(224, 224, 224, 1)', borderWidth: 1.5}}
-                status={network.autoUpload ? "checked" : "unchecked"}
-                onPress={()=>dispatch(setAPIAutoUpload(!network.autoUpload))}
+                status={network.upload ? "checked" : "unchecked"}
+                onPress={()=>dispatch(setAPIAutoUpload(!network.upload))}
               />}
             left={(props) => <Avatar.Icon {...props} icon="cloud-upload" />}
             />
@@ -57,11 +64,11 @@ export default function UploadingCard() {
                 mode="outlined"
                 style={{ padding: 8}}
                 icon="progress-upload">
-                    {network.autoUpload ? "Uploading is ON" : "Uploading is OFF"}
+                    {network.upload ? "Uploading is ON" : "Uploading is OFF"}
                 </Chip>
 
                 <Button
-                disabled={network.autoUpload && location.locationUpdates}
+                disabled={network.upload && location.locationUpdates}
                 icon="cloud-upload" mode="outlined" onPress={() => navigate('Network')}
                 style={{margin: 8}} >Network Settings</Button>
                 
@@ -71,11 +78,12 @@ export default function UploadingCard() {
 
             <Card.Title
             title="Package Syncing"
-            subtitle="Sync Offline Packages"
+            subtitle="Network Status"
             left={(props) => <Avatar.Icon {...props} icon="progress-upload" />}
             />
 
             <Card.Content>
+
                 <Chip
                 style={{ padding: 8}}
                 icon={network.connection.isConnected ? "check-network-outline" : "close-network-outline"} 
@@ -83,10 +91,6 @@ export default function UploadingCard() {
                     {network.connection.isConnected && network.connection.isInternetReachable ? 
                         network.connection.type?.toString() + " is connected" : "Server is not reachable"}
                 </Chip>
-
-                <Button icon="sync" mode="contained" onPress={() => navigate('Packages')}
-                loading={location.locationUpdates} disabled={(network.autoUpload && location.locationUpdates) || database.size === 0}
-                style={{margin: 8}} >Start Syncing Packages</Button>
 
             </Card.Content>
 

@@ -26,18 +26,19 @@ return (<>
         <Appbar.Action icon="help-circle-outline" />
     </Appbar.Header>
 
-    <ScrollView style={{backgroundColor: 'rgba(245, 245, 245, 1)'}}>
+    <ScrollView
+    style={{padding: 16, backgroundColor: 'rgba(245, 245, 245, 1)'}}
+    >
         <Text variant="titleMedium"
-        style={{textAlign: 'center', marginHorizontal: 12}}
+        style={{textAlign: 'center'}}
         >
-            Location Tracking Accuracy
+            My GPS
         </Text>
         <Text
-        style={{textAlign: 'center', marginVertical: 4, marginHorizontal: 12}}
+        style={{textAlign: 'center'}}
         >
-            GPS accuracy options range from accurate to the nearest three kilometers (Lowest) to the highest possible accuracy that uses additional sensor data
-            to facilitate navigation apps (Best For Navigation). In between, accuracy gets progressively better, ranging from accurate to the nearest kilometer
-            (Low) to within ten meters of the desired target (High) to the best level of accuracy available (Highest).
+           Este projeto Expo React Native foi criado com o objetivo de seguir o banco de dados do servidor Contele hospedado em https://github.com/contele/contele-vagas/tree/master/react-native , que lida com serviços de geolocalização.
+           O projeto Expo React Native permite que os usuários naveguem pelo banco de dados Contele de uma forma intuitiva.
         </Text>
     </ScrollView>
 

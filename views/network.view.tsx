@@ -17,10 +17,10 @@ import TimeoutSettings from '../components/network/timeout.settings';
 export default function NetworkView({ navigation }: Props) {
   
     // Bottom Navigation controller
-    const [ tabNavIndex, setTabNavIndex ] = React.useState(1);
+    const [ tabNavIndex, setTabNavIndex ] = React.useState(0);
     const [ routes ] = React.useState([
-        { key: 'test', title: 'Test', focusedIcon: 'access-point' },
         { key: 'address', title: 'Address', focusedIcon: 'link' },
+        { key: 'autoupload', title: 'Upload', focusedIcon: 'upload' },
         { key: 'timeout', title: 'Timeout', focusedIcon: 'timer-sand' },
     ]);
   

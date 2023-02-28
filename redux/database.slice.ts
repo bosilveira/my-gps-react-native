@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { countLocationPackages, getLocationPackagesPerPage, clearStorage } from "../utils/asyncStorage";
+import { countLocationPackages, getLocationPackagesPerPage, clearLocationDatabase } from "../utils/asyncStorage";
 
 // types
 import type { DatabaseState } from "../types/databaseState.type";
@@ -19,7 +19,7 @@ export const paginateLocationPackagesThunk = createAsyncThunk(
     "database/paginateLocationPackages",
     async (page: number, { getState } ) => {
         const state = getState() as any;
-        const { size, currentPage, currentPagelist, totalPages } = await getLocationPackagesPerPage(page, state.database.itemsPerPage);
+        const { size, currentPage, currentPagelist, totalPages } = await getLocationPackagesPerPage(page, state.database.itemsPerPage, state.database.sorting);
         return { size, currentPage, currentPagelist, totalPages };
     }
 );
@@ -29,7 +29,7 @@ export const reloadLocationPackagesThunk = createAsyncThunk(
     "database/reloadLocationPackages",
     async ( args=undefined, { getState } ) => {
         const state = getState() as any;
-        const { size, itemsPerPage, currentPage, currentPagelist, totalPages } = await getLocationPackagesPerPage(state.database.currentPage, state.database.itemsPerPage);
+        const { size, itemsPerPage, currentPage, currentPagelist, totalPages } = await getLocationPackagesPerPage(state.database.currentPage, state.database.itemsPerPage, state.database.sorting);
         return { size, itemsPerPage, currentPage, currentPagelist, totalPages };
     }
 );
@@ -38,7 +38,7 @@ export const reloadLocationPackagesThunk = createAsyncThunk(
 export const clearDatabaseThunk = createAsyncThunk(
     "database/clearDatabase",
     async () => {
-        clearStorage();
+        clearLocationDatabase();
         return 0;
     }
 );

@@ -14,11 +14,6 @@ export type MapData = {
         minAccuracy: number,
         maxAccuracy: number
     },
-    user: {
-        currentPosition: LocationObject,
-        normalizedCurrentPositionX: number,
-        normalizedCurrentPositionY: number
-    },
     points: Array<{
         x: number,
         y: number,

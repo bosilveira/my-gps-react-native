@@ -17,7 +17,8 @@ import { setCurrentPosition } from '../redux/location.slice';
 import { saveLocationPackage, countLocationPackages } from './asyncStorage';
 import { countLocationPackagesThunk, reloadLocationPackagesThunk, incrementSize } from '../redux/database.slice';
 import { GyroscopeSensor } from 'expo-sensors/build/Gyroscope';
-
+import { sendLocationPackageThunk } from '../redux/network.slice';
+import { LocationPackage } from '../types/locationPackage.type';
 
 // 1) LOCATION PERMISSIONS
 
@@ -104,8 +105,9 @@ export const startLocationUpdates = async (accuracy: number = 6, deferredUpdates
         if (data) {
             const { locations } = data as any;
             (async()=>{
-                await saveLocationPackage(locations[0].timestamp.toString(), locations[0]);
+                const locationPackage = await saveLocationPackage(locations[0].timestamp.toString(), locations[0]);
                 store.dispatch(incrementSize());
+                store.dispatch(sendLocationPackageThunk(locationPackage as LocationPackage));
             })()
         }
     });
@@ -133,18 +135,14 @@ export const millisecondsToTime = (ms: number): string => {
 }
 
 // 4.2 Reverse Geocode
+// Correios: geo[0].street, geo[0].streetNumber, geo[0].district, geo[0].subregion, geo[0].region, geo[0].country, geo[0].postalCode
 export const reverseGeocode = async (location: LocationObject) => {
     const result = await Location.reverseGeocodeAsync({ latitude: location.coords.latitude, longitude: location.coords.longitude });
     return result;
 }
 
-
+// 4.3 Map Creator
 export const getMap = async (): Promise<MapData> =>{
-    const currentPosition = await getCurrentPosition(6);
-    //const geo = await reverseGeocode(currentPosition);
-    // console.log(geo[0].city, geo[0].country, geo[0].district, geo[0].postalCode, geo[0].region, geo[0].isoCountryCode, geo[0].name,
-    //     geo[0].street, geo[0].streetNumber, geo[0].subregion, geo[0].timezone )
-    // console.log("Here:", geo[0].street, geo[0].streetNumber, geo[0].district, geo[0].subregion, geo[0].region, geo[0].country, geo[0].postalCode )
     const positions = await getAllLocationPackages();
     const latitudes = positions.map(item=>item.location.coords.latitude);
     const longitudes = positions.map(item=>item.location.coords.longitude);
@@ -157,18 +155,14 @@ export const getMap = async (): Promise<MapData> =>{
     const maxAccuracy = Math.max(...accuracies);
     const longitudeDelta = maxLongitude - minLongitude;
     const latitudeDelta = maxLatitude - minLatitude;
-    const accuracyDelta = maxAccuracy - minAccuracy;
     const centerLatitude = (maxLatitude + minLatitude) / 2;
     const centerLongitude = (maxLongitude + minLongitude) / 2;
     const maxLength = Math.max(latitudeDelta, longitudeDelta);
     const points = positions.map( (item, index)=> {
         const normalizedY = 1 - ((maxLength - latitudeDelta)/2 + item.location.coords.latitude - minLatitude) / maxLength;
         const normalizedX = ((maxLength - longitudeDelta)/2 + item.location.coords.longitude - minLongitude) / maxLength;
-        //const normalizedAccuracy = (item.location.coords.accuracy - minAccuracy) / (accuracyDelta);
         return { x: normalizedX, y: normalizedY, accuracy: item.location.coords.accuracy, status: item.status, power: item.power };
     });
-    const normalizedCurrentPositionY = 1 - ((maxLength - latitudeDelta)/2 + currentPosition.coords.latitude - minLatitude) / maxLength;
-    const normalizedCurrentPositionX = ((maxLength - longitudeDelta)/2 + currentPosition.coords.longitude - minLongitude) / maxLength;
     return { 
         center: {
             centerLatitude,
@@ -181,11 +175,6 @@ export const getMap = async (): Promise<MapData> =>{
             maxLongitude,
             minAccuracy,
             maxAccuracy
-        },
-        user: {
-            currentPosition,
-            normalizedCurrentPositionX,
-            normalizedCurrentPositionY
         },
         points
     };

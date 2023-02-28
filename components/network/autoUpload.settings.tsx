@@ -36,7 +36,7 @@ export default function AutoUploadSettings() {
         <Chip
         style={{marginVertical: 8, padding: 8}}
         icon="progress-upload">
-            Auto Upload is {network.autoUpload ? "ON" : "OFF"}
+            Auto Upload is {network.upload ? "ON" : "OFF"}
         </Chip>
 
             <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', width: '100%', marginTop: 4}}>
@@ -45,8 +45,8 @@ export default function AutoUploadSettings() {
                 icon="upload"
                 value="upload"
                 style={{marginLeft: 8, borderColor: 'rgba(192, 192, 192, 1)', borderWidth: 1}}
-                status={network.autoUpload ? "checked" : "unchecked"}
-                onPress={()=>{dispatch(setAPIAutoUpload(!network.autoUpload))}}
+                status={network.upload ? "checked" : "unchecked"}
+                onPress={()=>{dispatch(setAPIAutoUpload(!network.upload))}}
               />
             </View>
         </View>

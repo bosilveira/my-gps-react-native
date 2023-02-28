@@ -6,6 +6,12 @@ import * as Network from 'expo-network';
 // types
 import { NetworkState } from "../types/networkState.type";
 import { NetworkStateStatus } from "../types/networkState.type";
+import { store } from '../redux/store.redux';
+
+// utils
+import { apiSendPackage } from "../utils/network.utils";
+import { LocationPackage, LocationPackageStatus } from "../types/locationPackage.type";
+import { updateLocationPackageStatus } from "../utils/asyncStorage";
 
 // Send Package Thunk
 
@@ -16,6 +22,26 @@ export const checkConnectionThunk = createAsyncThunk(
         return connection;
     }
 )
+
+export const sendLocationPackageThunk = createAsyncThunk(
+    "network/sendLocationPackage",
+    async ( locationPackage: LocationPackage, { getState, dispatch })  => {
+        const state = getState() as any;
+        if (state.network.autoUpload) {
+            const result = await apiSendPackage(locationPackage.location, locationPackage.id, state.network.address, state.network.timeout);
+            if (!result) {
+                throw Error('uploading error');
+            } else {
+                await updateLocationPackageStatus(locationPackage.id, LocationPackageStatus.SENT);
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+)
+
+
 
 const restoreApiData = createAsyncThunk(
     "network/restoreApiData",
@@ -41,8 +67,7 @@ const networkSlice = createSlice({
     initialState: {
         address: 'http://192.168.1.3:8081',
         timeout: 4000,
-        autoUpload: true,
-        uploading: false,
+        upload: true,
         syncing: false,
         //token: '',
         fetchErrorCount: 0,
@@ -64,7 +89,7 @@ const networkSlice = createSlice({
             state.status = NetworkStateStatus.TIMEOUT_SET;
         },
         setAPIAutoUpload: (state, action) => {
-            state.autoUpload = action.payload;
+            state.upload = action.payload;
             state.status = NetworkStateStatus.UPLOADING_ON;
         },
         setConnection: (state, action) => {
@@ -86,6 +111,22 @@ const networkSlice = createSlice({
 
         builder.addCase(checkConnectionThunk.fulfilled, (state, action) => {
             state.connection = action.payload;
+        });
+
+        builder.addCase(sendLocationPackageThunk.fulfilled, (state, action) => {
+            if (action.payload) {
+                state.status = NetworkStateStatus.SENT;
+                console.log('sent sent sent')
+            }
+        });
+
+        builder.addCase(sendLocationPackageThunk.rejected, (state, action) => {
+            state.status = NetworkStateStatus.FETCH_ERROR;
+            state.fetchErrorCount += 1;
+            if (state.fetchErrorCount > 4) {
+                state.upload = false;
+                state.fetchErrorCount = 0;
+            }
         });
 
 
