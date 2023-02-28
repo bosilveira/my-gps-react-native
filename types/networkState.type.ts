@@ -6,6 +6,7 @@ export enum NetworkStateStatus {
     UPLOADING_ON = "Uploading is ON",
     UPLOADING_OFF = "Uploading is OFF",
     SENDING = "Sending Location Package",
+    SENT = "Success: Package Sent",
     CHECKING = "Checking Connection to Server",
     FETCH_ERROR = "API Fetch Error",
 }
@@ -13,8 +14,7 @@ export enum NetworkStateStatus {
 export type NetworkState = {
     address: string,
     timeout: number,
-    autoUpload: boolean,
-    uploading: boolean,
+    upload: boolean,
     syncing: boolean,
     //token: string,
     connection: Network.NetworkState,

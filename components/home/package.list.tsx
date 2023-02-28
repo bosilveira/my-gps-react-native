@@ -79,7 +79,7 @@ export default function PackageList() {
 
     <ScrollView style={{backgroundColor: 'rgba(245, 245, 245, 1)'}}>
 
-        {!database.loading && database.size > 0 && (
+        {(!database.loading && !(database.size === 0)) && (
         <View>{database.currentPageList.map((item: LocationPackage, index: any)=><LocationPackageCard key={index} data={item}/>)}</View>)}
 
         <Divider style={{marginVertical: 8}} horizontalInset={true}/>

@@ -1,6 +1,6 @@
 // React Native, React Native Paper, and Expo components
 import * as React from 'react';
-import { View, SafeAreaView, ScrollView } from 'react-native';
+import { View, SafeAreaView, ScrollView, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native-paper';
 import { Appbar, Divider, Button } from 'react-native-paper';
@@ -22,6 +22,15 @@ export default function SecurityPage({ navigation }: Props) {
     const dispatch = useDispatch<AppDispatch>();
     const packagesData = useSelector((state: RootState) => state.database) as DatabaseState;
 
+    const deleteHandler = ()=> {
+        dispatch(clearDatabaseThunk())
+        Alert.alert('Database Reset', 'Database was Dropped', [
+            {
+                text: 'OK',
+            },
+        ]);
+    }
+
     return (<>
     
     <StatusBar 
@@ -36,7 +45,7 @@ export default function SecurityPage({ navigation }: Props) {
         <Appbar.Action icon="security" />
     </Appbar.Header>
 
-    <Button icon="database-off-outline" buttonColor={'red'} mode="contained" onPress={() => dispatch(clearDatabaseThunk())} 
+    <Button icon="database-off-outline" buttonColor={'red'} mode="contained" onPress={deleteHandler} 
         style={{marginVertical: 16, marginHorizontal: 32}} >Clear Storage</Button>
 
     </>);

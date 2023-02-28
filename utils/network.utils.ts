@@ -2,7 +2,7 @@
 import axios, {isCancel, AxiosError} from 'axios';
 import { store } from '../redux/store.redux';
 import * as Network from 'expo-network';
-import { updateLocationPackageStatus, deleteLocationPackage } from './asyncStorage';
+import { updateLocationPackageStatus } from './asyncStorage';
 
 // types
 import type { LocationObject } from 'expo-location';

@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import { AppDispatch, RootState } from '../../redux/store.redux';
 import { useSelector, useDispatch } from 'react-redux';
 import { startLocationUpdatesThunk, stopLocationUpdatesThunk, setDeferredUpdatesInterval, getAndStoreCurrentPositionThunk } from '../../redux/location.slice';
+import { countLocationPackagesThunk } from '../../redux/database.slice';
 
 // types
 import type { LocationState } from '../../types/locationState.type';
@@ -41,6 +42,10 @@ export default function TrackingCard() {
             setSwitchLocationOn(false);
         }
     }
+
+    React.useEffect(()=>{
+        dispatch(countLocationPackagesThunk());
+    },[])
 
     return (<>
     <ScrollView style={{backgroundColor: 'rgba(245, 245, 245, 1)'}}>
@@ -114,10 +119,6 @@ export default function TrackingCard() {
         </Card>
 
         <Divider style={{marginVertical: 8}} horizontalInset={true}/>
-
-        <Text style={{textAlign: 'center', padding: 8}}>
-            All location packages are saved into the database. If there is a fetch error, you can sync packages later.
-        </Text>
 
         <Text style={{textAlign: 'center', padding: 8}}>
             Calling "Current Position" causes the location manager to obtain a location fix which may take several seconds.
