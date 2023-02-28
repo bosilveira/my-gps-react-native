@@ -14,6 +14,7 @@ import type { LocationState } from '../../types/locationState.type';
 import type { NetworkState } from '../../types/networkState.type';
 import type { DatabaseState } from '../../types/databaseState.type';
 import { countLocationPackagesThunk } from '../../redux/database.slice';
+
 type Nav = { navigate: (value: string) => void }
 
 export default function UploadingCard() {
@@ -33,11 +34,9 @@ export default function UploadingCard() {
         }
     },[])
 
-    // Pagination controller
     React.useEffect(()=>{
         dispatch(countLocationPackagesThunk());
     },[])
-
 
     return (<>
     <ScrollView style={{backgroundColor: 'rgba(245, 245, 245, 1)'}}>
